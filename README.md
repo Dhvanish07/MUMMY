@@ -2,46 +2,47 @@
 
 Your personal AI-powered health & wellness companion.
 
-MUMMY is a comprehensive web app that blends warm, mother-like care with practical health guidance. It provides AI-generated recipes, trip packing lists, a supportive chatbot, and meal-time notifications — all powered by Google Gemini and a lightweight PHP backend.
+MUMMY blends warm, mother-like care with practical health guidance. It provides AI-generated recipes, smart trip packing lists, a supportive Hinglish chatbot, and meal-time notifications — all powered by Google Gemini and a lightweight PHP backend. Designed for simplicity, local-first development, and clear configuration.
 
 ---
 
 ## Contents
 
-- Overview
+- Basic Idea
 - Features
 - Tech Stack
-- Project Structure
-- Setup Guide
-- API Keys Configuration
+- Architecture Overview
+- File Structure
+- Setup (Windows + XAMPP)
+- Configuration (API Keys + Optional DB)
+- Usage Guide
 - Endpoints
 - Troubleshooting
 - Security Notes
+- FAQ
+- Roadmap
 
 ---
 
-## Overview
+## Basic Idea
 
-MUMMY helps users:
-- Generate personalized meal recipes
-- Create smart packing lists based on destination and days
-- Chat with a caring, Hinglish-enabled health companion
-- Receive time-based meal notifications across the day
-
-Design goals:
-- Simple architecture (Vanilla JS + PHP)
-- Clear API key management per service
-- Works locally with XAMPP, mock-data fallback for dev
+Create a caring assistant that helps users eat well, pack smart, and stay supported throughout the day. The app focuses on:
+- Friendly guidance with a Hinglish tone
+- Practical outcomes (recipes, packing lists, reminders)
+- Fast local iteration with mock data and minimal dependencies
 
 ---
 
 ## Features
 
-- Recipes: AI-crafted recipes tailored to diet, time, spice-level, and ingredients
-- Pack My Bag: Weather- and duration-aware packing lists, organized by category
-- Chatbot: Warm, supportive Hinglish chatbot with health, diet, and fitness guidance
-- Notifications: Six meal windows (Early Morning, Breakfast, Mid-Morning, Lunch, Evening Snack, Dinner)
-- User Persistence: Auto-login demo user; localStorage-based profile and history
+- Recipes: AI-generated, diet-aware recipes tailored to ingredients, time of day, and spice preference
+- Pack My Bag: Destination- and duration-aware packing lists, grouped by categories
+- Chatbot: Supportive Hinglish assistant for health, diet, and fitness Q&A
+- Notifications: Six meal windows — Early Morning, Breakfast, Mid-Morning, Lunch, Evening Snack, Dinner
+- Diet Plans: Reference plans and a selector to explore options
+- Health Tracking: `bimaar` view and quick calories guide
+- Auth (basic): Login/Register stubs with optional DB wiring
+- Local Persistence: Auto-login demo user; history saved in localStorage
 
 ---
 
@@ -54,115 +55,209 @@ Design goals:
 
 ---
 
-## Project Structure
+## Architecture Overview
+
+- Frontend (Vanilla JS)
+   - UI pages for recipes, packing, chatbot, health tracking
+   - Notification services for time-based reminders
+   - Local storage for demo user and quick persistence
+
+- Backend (PHP)
+   - Endpoints for recipes and packing
+   - Stream-based HTTP calls to Gemini (no cURL dependency)
+   - Optional auth and DB setup scripts
+
+- External API
+   - Google Gemini `v1beta/models/gemini-2.5-flash:generateContent`
+   - Separate API keys per service (recipes, packing, chatbot)
+
+---
+
+## File Structure
 
 ```
 mummy/
 ├─ frontend/
-│  ├─ index.html            # Main UI (recipes, packing, chatbot, notifications)
-│  ├─ bimaar.html           # Health tracking page
-│  ├─ app.js                # Core client logic (user init, API calls, renderers)
-│  ├─ notification-service.js
-│  ├─ notification-manager.js
-│  ├─ notification-integration.js
-│  ├─ bimaar.js, calories.js
-│  ├─ diet-plans.js, diet-plan-selector.js
-│  ├─ styles.css
-│  └─ pictures/logo.png
+│  ├─ index.html                 # Main UI (recipes, packing, chatbot, notifications)
+│  ├─ packing.html               # Dedicated packing UI
+│  ├─ bimaar.html                # Health tracking page
+│  ├─ login.html                 # Basic login form (optional)
+│  ├─ app.js                     # Core client logic (user init, API calls, renderers)
+│  ├─ bimaar.js                  # Health tracking scripts
+│  ├─ calories.js                # Quick calories guidance
+│  ├─ diet-plans.js              # Diet plans data
+│  ├─ diet-plan-selector.js      # Diet plan selector UI
+│  ├─ notification-service.js    # Meal-time notification logic
+│  ├─ notification-manager.js    # Notification state + orchestration
+│  ├─ notification-integration.js# UI integration for notifications
+│  ├─ notification-bell.js       # Bell icon logic
+│  ├─ notification-config.js     # Config for meal windows
+│  ├─ notification-test.html     # Test page for notifications
+│  ├─ notifications.json         # Notification data
+│  ├─ ingredient-selector.css    # Ingredient selector styling
+│  ├─ styles.css                 # Global styles
+│  ├─ vegetables.json            # Ingredient data
+│  └─ pictures/                  # UI images and logos
 │
 ├─ backend/
-│  ├─ generate_recipes.php  # Recipe endpoint (Gemini + user preferences)
-│  ├─ generate_packing.php  # Packing endpoint (Gemini + destination/days)
-│  └─ db_config.php         # Optional MySQL config (dev uses mock data)
+│  ├─ generate_recipes.php       # Recipe endpoint (Gemini + user preferences)
+│  ├─ generate_packing.php       # Packing endpoint (Gemini + destination/days)
+│  ├─ config.php                 # Optional DB config include
+│  ├─ login.php                  # Login (optional)
+│  ├─ register.php               # Register (optional)
+│  ├─ register_with_preferences.php # Register + preferences (optional)
+│  ├─ setup_database.php         # DB setup script (optional)
+│  ├─ test_connection.php        # DB connection tester
+│  ├─ test_recipe_generation.php # Endpoint tester for recipes
+│  └─ RECIPE_SUGGESTION_PROMPT.md# Prompt reference
 │
 ├─ chatbot/
-│  ├─ chatbot-service.js    # Gemini-native chat request/response handling
-│  ├─ chat-manager.js       # Chat UI modal, message handling
-│  ├─ chatbot-config.js     # Greetings, memory settings, personality
-│  ├─ chatbot-styles.css    # Chat styling
-│  └─ chatbot-data.json     # Sample storage format
+│  ├─ chatbot-service.js         # Gemini-native chat request/response handling
+│  ├─ chat-manager.js            # Chat UI modal + message handling
+│  ├─ chatbot-config.js          # Greetings, memory settings, personality
+│  ├─ chatbot-styles.css         # Chat styling
+│  ├─ chatbot-data.json          # Sample storage format
+│  ├─ chatbot-test.js            # Chatbot integration test harness
+│  ├─ INTEGRATION_GUIDE.md       # Chatbot integration notes
+│  └─ README.md                  # Chatbot-specific readme
 │
-└─ README.md                # This unified documentation
+├─ notifications/
+│  ├─ notification-service.js    # Standalone notification logic
+│  ├─ notification-config.js     # Standalone meal window config
+│  ├─ notifications.json         # Standalone notification data
+│  └─ test.html                  # Standalone notification test page
+│
+├─ pictures/                     # Ingredient icons + logo
+│  └─ logo.png                   # App logo
+│
+├─ docs/                         # Additional documentation and guides
+│  ├─ API_DOCS.md
+│  ├─ GEMINI_SETUP.md
+│  ├─ SETUP.md
+│  ├─ QUICK_REFERENCE.md
+│  └─ DEMO.md
+│
+├─ INDEX.html                    # Entry point alias (for some deployments)
+├─ generate_recipes.php          # Root-level helper (ensure key alignment)
+├─ packing_generator.py          # Experimental packing generator (Python)
+├─ README.md                     # This unified documentation
+└─ misc docs (.md)               # Architecture, guides, and summaries
 ```
 
 ---
 
-## Setup Guide
+## Setup (Windows + XAMPP)
 
-1) Install XAMPP (Apache + PHP + MySQL).
-- Start Apache (and MySQL if using DB).
+1) Install XAMPP
+- Download and install XAMPP (Apache + PHP + MySQL).
+- Start Apache (and MySQL if using DB features).
 
-2) Place project under your active `htdocs`:
-- Common: `C:\Users\<You>\Desktop\XAMPP\htdocs\mummy\`
-- Alternates: `C:\xampp\htdocs\mummy\` or platform equivalent
+2) Verify your active XAMPP install
+- Some systems have both `C:\xampp` and `C:\Users\<You>\Desktop\XAMPP`.
+- Confirm the active one by checking which Apache is running.
+   - Tip: The active install has a current `apache\logs\httpd.pid`.
 
-3) Configure API keys (see next section) before testing features.
+3) Clone or copy the project into `htdocs`
+- Example: `C:\Users\<You>\Desktop\XAMPP\htdocs\mummy\`
+- Alternate: `C:\xampp\htdocs\mummy\`
 
-4) Open the app:
-- http://localhost/mummy/index.html
+4) Configure API keys (critical)
+- See “Configuration” below to set keys in three locations.
 
-5) Validate features:
-- Recipes: generate a recipe
-- Packing: enter destination/days and generate list
-- Chatbot: open modal, send a message
-- Notifications: appear during meal windows
+5) Optional: Configure MySQL
+- Run `backend/setup_database.php` and configure `backend/config.php`.
+- Import sample data from `SAMPLE_USER_DATA.sql` if needed.
+
+6) Launch
+- Open: `http://localhost/mummy/index.html` (main)
+- Also available: `packing.html`, `bimaar.html`, `login.html`, `notification-test.html` under `frontend/`.
 
 ---
 
-## API Keys Configuration (Critical)
+## Configuration (API Keys + Optional DB)
 
 Use three distinct Gemini API keys — one per service. Keep them private.
 
-- Chatbot key in `chatbot/chatbot-service.js`:
-  - Set `this.geminiApiKey = 'YOUR_CHATBOT_API_KEY'`
-  - Endpoint must be `.../v1beta/models/gemini-2.5-flash:generateContent`
+- Chatbot key — file: `chatbot/chatbot-service.js`
+   - Set: `this.geminiApiKey = 'YOUR_CHATBOT_API_KEY'`
+   - Endpoint: `.../v1beta/models/gemini-2.5-flash:generateContent`
 
-- Recipes key in `backend/generate_recipes.php`:
-  - Set `$GEMINI_API_KEY = "YOUR_RECIPE_API_KEY"`
-  - Endpoint `.../v1beta/models/gemini-2.5-flash:generateContent`
+- Recipes key — file: `backend/generate_recipes.php`
+   - Set: `$GEMINI_API_KEY = "YOUR_RECIPE_API_KEY"`
+   - Endpoint: `.../v1beta/models/gemini-2.5-flash:generateContent`
 
-- Packing key in `backend/generate_packing.php`:
-  - Set `$GEMINI_API_KEY = "YOUR_PACKING_API_KEY"`
-  - Endpoint `.../v1beta/models/gemini-2.5-flash:generateContent`
+- Packing key — file: `backend/generate_packing.php`
+   - Set: `$GEMINI_API_KEY = "YOUR_PACKING_API_KEY"`
+   - Endpoint: `.../v1beta/models/gemini-2.5-flash:generateContent`
 
 Notes:
 - Some deployments may also have a root `generate_packing.php` under `htdocs/mummy`. If present, keep that file’s key in sync with `backend/generate_packing.php`.
 - Never commit real API keys to source control; use environment variables in production.
+- In production, store secrets securely (e.g., server env vars or a secrets vault).
+
+Optional DB:
+- Configure `backend/config.php` with your DB credentials.
+- Use `backend/setup_database.php` and provided `.sql` files to initialize.
+
+---
+
+## Usage Guide
+
+- Main: `index.html`
+   - Generate recipes
+   - Open chatbot modal and chat
+   - See notifications as meal windows occur
+
+- Packing: `packing.html`
+   - Enter destination and number of days
+   - Generate categorized packing list
+
+- Health: `bimaar.html`
+   - Track health inputs and review guidance
+
+- Auth: `login.html`
+   - Basic login form (optional wiring to DB)
+
+- Notifications: `notification-test.html`
+   - Manually verify notification behavior and UI
 
 ---
 
 ## Endpoints
 
 - Recipes
-  - GET/POST: `/backend/generate_recipes.php?user_id=1`
-  - Returns: `{ success: true, recipe: "..." }`
+   - GET/POST: `/backend/generate_recipes.php?user_id=1`
+   - Returns: `{ success: true, recipe: "..." }`
 
 - Packing
-  - GET: `/backend/generate_packing.php?user_id=1&destination=Paris&days=5`
-  - Returns: `{ success: true, destination, days, packing_list: "..." }`
+   - GET: `/backend/generate_packing.php?user_id=1&destination=Paris&days=5`
+   - Returns: `{ success: true, destination, days, packing_list: "..." }`
 
 - Chatbot (frontend → Gemini)
-  - POST: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_CHATBOT_API_KEY`
-  - Body uses Gemini-native `contents/parts` format
+   - POST: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_CHATBOT_API_KEY`
+   - Body uses Gemini-native `contents/parts` format
 
 ---
 
 ## Troubleshooting
 
 - 500 Backend Error
-  - Check Apache is running and file deployed to the active XAMPP install.
-  - Verify API keys are valid (403 indicates leaked/invalid key).
+   - Check Apache is running and file deployed to the active XAMPP install.
+   - Verify API keys are valid (403 indicates leaked/invalid key).
 
 - Chatbot 400 Bad Request
-  - Ensure URL is the Gemini native endpoint (`generateContent`), not the OpenAI-compatible one.
+   - Ensure URL is the Gemini native endpoint (`generateContent`), not the OpenAI-compatible one.
 
 - Notifications Not Showing
-  - Must be within defined meal windows (e.g., Breakfast 7–9 AM).
-  - Clear localStorage if a meal was already notified: `localStorage.clear()`.
+   - Must be within defined meal windows (e.g., Breakfast 7–9 AM).
+   - Clear localStorage if a meal was already notified: `localStorage.clear()`.
 
 - Two XAMPP Installs
-  - Confirm which one is active by checking `apache/logs/httpd.pid`.
-  - Deploy to the install with a current PID.
+   - Confirm which one is active by checking `apache/logs/httpd.pid`.
+   - Deploy to the install with a current PID.
+
+- cURL Missing in PHP
+   - Endpoints use `file_get_contents` with `stream_context`, so cURL is not required.
 
 ---
 
@@ -175,12 +270,29 @@ Notes:
 
 ---
 
-## Status
+## FAQ
 
-- All core features designed to run locally with mock data fallback.
-- Swap to MySQL by configuring `backend/db_config.php` and wiring user preference queries.
+- Q: Why separate API keys?
+   - A: Isolation reduces blast radius and eases rotation.
 
-Happy building — and take care, beta! 💚# 🏥 MUMMY - Complete Project Documentation
+- Q: Can I use a DB for user preferences?
+   - A: Yes. Wire `backend/config.php` and use setup scripts.
+
+- Q: Does the project require Node or `npm run dev`?
+   - A: No. This is a PHP + static frontend project under Apache.
+
+---
+
+## Roadmap
+
+- Add richer user profiles and persistent preferences
+- Expand diet plans with customization and schedules
+- Improve chatbot memory and context retention
+- Optional OAuth and secure session management
+
+---
+
+Happy building — and take care, beta! 💚
 
 > Your Personal AI-Powered Health & Wellness Companion
 
