@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧊 Bimaar Hu - MUMMY Care</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Bimaar Hu Specific Styles */
+        .bimaar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .condition-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .condition-card {
+            background: white;
+            border: 2px solid #FFE5CC;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+        }
+
+        .condition-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-orange);
+        }
+
+        .condition-card.active {
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-warm));
+            color: white;
+            border-color: var(--primary-orange);
+        }
+
+        .condition-emoji {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .condition-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .condition-hindi {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .care-content {
+            display: none;
+        }
+
+        .care-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .care-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-light);
+            border-left: 5px solid var(--primary-orange);
+        }
+
+        .care-section h3 {
+            color: var(--primary-orange);
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .care-section ul, .care-section ol {
+            margin-left: 1.5rem;
+        }
+
+        .care-section li {
+            margin: 0.75rem 0;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .plan-item {
+            background: #FFF5E1;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-warm);
+        }
+
+        .plan-time {
+            font-weight: 700;
+            color: var(--primary-orange);
+            font-size: 1.05rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-activity {
+            color: var(--text-dark);
+        }
+
+        .doctor-question {
+            background: #FFF5E1;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-orange);
+        }
+
+        .doctor-question input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+
+        .doctor-question label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .doctor-result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .doctor-result.safe {
+            background: #E8F5E9;
+            border: 2px solid #06A77D;
+            color: #06A77D;
+        }
+
+        .doctor-result.concern {
+            background: #FFF3E0;
+            border: 2px solid #FF6B35;
+            color: #FF6B35;
+        }
+
+        .doctor-result.alert {
+            background: #FFEBEE;
+            border: 2px solid #D62828;
+            color: #D62828;
+        }
+
+        .mummy-says {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 209, 102, 0.1));
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-orange);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            font-style: italic;
+            text-align: center;
+        }
+
+        .mummy-heart {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .back-btn {
+            background: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="navbar-brand">
+            <div class="brand-logo">
+                <span style="font-size: 2.5rem;">🍲</span>
+            </div>
+            <div>
+                <h1 class="brand-name">MUMMY</h1>
+                <p class="brand-tagline">Bhook Lagi Hai?</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bimaar-container">
+        <!-- Back Button -->
+        <button class="back-btn" onclick="window.history.back()">← Go Back</button>
+
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; color: var(--primary-orange); margin-bottom: 0.5rem;">🧊 Bimaar Hu...</h1>
+            <p style="font-size: 1.1rem; color: var(--text-light);">Beta, Mummy ko bataa... tujhe kya problem hai?</p>
+            <p style="font-size: 0.95rem; color: var(--text-light); margin-top: 0.5rem;">निचे अपनी condition चुन</p>
+        </div>
+
+        <!-- Condition Selector -->
+        <div class="condition-selector" id="conditionSelector">
+            <!-- Dynamically populated by bimaar.js -->
+        </div>
+
+        <!-- Care Content -->
+        <div id="careContent">
+            <!-- Dynamically populated by bimaar.js -->
+        </div>
+    </div>
+
+    <script src="bimaar.js"></script>
+</body>
+</html>

@@ -6,44 +6,43 @@
     <title>MUMMY – Bhook Lagi Hai</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="ingredient-selector.css">
+    <link rel="stylesheet" href="../chatbot/chatbot-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
         
-        <!-- Header Section -->
+        <!-- Header Section - Vertical Sidebar Navbar -->
         <header class="header">
-            <div class="header-content">
-                <h1 class="app-title">🍲 MUMMY</h1>
-                <p class="app-subtitle" id="appSubtitle">Bhook Lagi Hai?</p>
-                <p class="header-message" id="motherMessage">Aaj khane mein kya banau beta?</p>
+            <!-- Branding Section - Top -->
+            <div class="navbar-brand">
+                <!-- Logo -->
+                <div class="brand-logo">
+                    <img src="pictures/logo.png" alt="MUMMY Logo" class="logo-img">
+                </div>
+                <!-- App Name and Tagline -->
+                <div class="brand-text">
+                    <h1 class="app-title">MUMMY</h1>
+                    <p class="app-subtitle" id="appSubtitle">Bhook Lagi Hai?</p>
+                </div>
             </div>
 
-            <!-- Navigation Menu -->
-            <nav class="main-nav">
-                <a href="index.html" class="nav-link active" title="Recipe Generator">
-                    <span class="nav-icon">🍳</span>
-                    <span class="nav-text">Recipes</span>
-                </a>
-                <a href="packing.html" class="nav-link" title="Packing List">
-                    <span class="nav-icon">🎒</span>
-                    <span class="nav-text">Pack My Bag</span>
-                </a>
-            </nav>
-            
-            <!-- Language & Region Selectors -->
-            <div class="settings-panel">
-                <div class="setting-group">
-                    <label for="languageSelect">🗣️ <span id="langLabel">Language</span></label>
-                    <select id="languageSelect" class="settings-select">
+            <!-- Utility Options Section - Top Right -->
+            <div class="utility-options">
+                <!-- Language Selector -->
+                <div class="utility-group">
+                    <label for="languageSelect">🗣️</label>
+                    <select id="languageSelect" class="utility-select">
                         <option value="english">English</option>
-                        <option value="hinglish">Hinglish (हिंग्लिश)</option>
+                        <option value="hinglish">Hinglish</option>
                         <option value="hindi">हिंदी</option>
                     </select>
                 </div>
-                <div class="setting-group">
-                    <label for="regionSelect">📍 <span id="regionLabel">Region</span></label>
-                    <select id="regionSelect" class="settings-select">
+
+                <!-- Region Selector -->
+                <div class="utility-group">
+                    <label for="regionSelect">📍</label>
+                    <select id="regionSelect" class="utility-select">
                         <option value="north">North India</option>
                         <option value="south">South India</option>
                         <option value="east">East India</option>
@@ -51,20 +50,38 @@
                         <option value="northeast">North-East India</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="user-info">
-                <span id="userName">Guest</span>
-                
+
                 <!-- Notification Bell -->
-                <button id="notificationBell" class="notification-bell" title="View notifications">
-                    <span class="bell-icon">🔔</span>
-                    <span class="notification-count" id="notificationCount" style="display: none;">0</span>
+                <button class="utility-btn" id="notificationBell" title="Notifications">
+                    🔔
                 </button>
-                
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+
+                <!-- Logout Button -->
+                <button class="utility-btn logout-btn" id="logoutBtn" title="Logout">
+                    Logout
+                </button>
             </div>
-            
+
+            <!-- Primary Actions Section - Second Row -->
+            <nav class="primary-actions">
+                <a href="index.html" class="action-link active" title="Recipe Generator">
+                    <span class="action-icon">🍳</span>
+                    <span class="action-text">Recipes</span>
+                </a>
+                <a href="packing.html" class="action-link" title="Packing List">
+                    <span class="action-icon">🎒</span>
+                    <span class="action-text">Pack My Bag</span>
+                </a>
+                <a href="bimaar.html" class="action-link" title="Bimaar Hu - When Not Feeling Well">
+                    <span class="action-icon">🧊</span>
+                    <span class="action-text">Bimaar Hu</span>
+                </a>
+                <a href="#" class="action-link" id="dietPlanLink" title="Select a Diet Plan">
+                    <span class="action-icon">🥗</span>
+                    <span class="action-text">Select a Diet Plan</span>
+                </a>
+            </nav>
+
             <!-- Notification Dropdown -->
             <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
                 <div class="notification-header">
@@ -116,7 +133,12 @@
 
             <!-- Selected Ingredients Basket -->
             <section class="basket-section">
-                <h2 class="section-title">Selected: <span id="basketCount">0</span></h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 class="section-title" style="margin: 0;">Selected: <span id="basketCount">0</span></h2>
+                    <div id="totalCaloriesHeader" style="font-weight: bold; color: #ff6f00; font-size: 1.1em; display: none;">
+                        📊 Total: <span id="totalCaloriesValue">0</span> kcal
+                    </div>
+                </div>
                 <div class="basket-container" id="basketContainer">
                     <p class="basket-empty">Kuch ingredients select kar...</p>
                 </div>
@@ -185,13 +207,44 @@
             </div>
         </div>
 
+        <!-- Diet Plan Selection Modal -->
+        <div class="modal" id="dietPlanModal">
+            <div class="diet-plan-modal-content">
+                <button class="modal-close" id="closeDietPlanModal">&times;</button>
+                <div class="diet-plan-header">
+                    <h2>Choose Your Diet Plan 🥗</h2>
+                    <p class="diet-plan-subtitle">Select a plan that matches your health goals (Optional)</p>
+                </div>
+                <div class="diet-plans-grid" id="dietPlansGrid">
+                    <!-- Dynamically populated with diet plans -->
+                </div>
+                <div class="diet-plan-footer">
+                    <p id="selectedPlanInfo" style="text-align: center; color: #888; font-size: 0.9rem; margin-bottom: 1rem;">No plan selected</p>
+                    <button id="confirmDietPlanBtn" class="confirm-btn">Confirm Selection</button>
+                    <button id="skipDietPlanBtn" class="skip-btn">Skip (No Diet Plan)</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Notification System -->
-    <script src="notification-config.js"></script>
-    <script src="notification-service.js"></script>
+    <script src="../notifications/notification-config.js"></script>
+    <script src="../notifications/notification-service.js"></script>
+    <script src="notification-manager.js"></script>
     <script src="notification-integration.js"></script>
-    <script src="notification-bell.js"></script>
+    
+    <!-- Calories Database -->
+    <script src="calories.js"></script>
+
+    <!-- Diet Plans -->
+    <script src="diet-plans.js"></script>
+    <script src="diet-plan-selector.js"></script>
+    
+    <!-- Chatbot Integration -->
+    <script src="../chatbot/chatbot-config.js"></script>
+    <script src="../chatbot/chatbot-service.js"></script>
+    <script src="../chatbot/chat-manager.js"></script>
     
     <!-- Main App -->
     <script src="app.js"></script>

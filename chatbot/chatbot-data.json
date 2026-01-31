@@ -1,0 +1,87 @@
+{
+  "userProfile": {
+    "id": "user_001",
+    "name": "",
+    "age": "",
+    "gender": "",
+    "health_status": "",
+    "diet_preference": "",
+    "fitness_level": "sedentary",
+    "favorite_foods": [],
+    "allergies": [],
+    "daily_routine": "",
+    "goals": [],
+    "preferences": {
+      "language": "hinglish",
+      "response_style": "warm",
+      "notification_frequency": "daily"
+    },
+    "mood_history": [],
+    "last_interaction": null,
+    "profile_created_at": null,
+    "profile_updated_at": null
+  },
+
+  "conversationHistory": [
+    {
+      "id": "msg_001",
+      "timestamp": null,
+      "speaker": "bot",
+      "message": "Hello beta! I'm MUMMY, your caring health companion. Let's chat and I'll help you with your wellness journey.",
+      "type": "greeting",
+      "sentiment": "positive"
+    }
+  ],
+
+  "summaries": {
+    "session_summaries": [],
+    "weekly_summaries": [],
+    "monthly_summaries": [],
+    "user_insights": {
+      "health_concerns": [],
+      "diet_patterns": [],
+      "mood_patterns": [],
+      "fitness_patterns": [],
+      "behavioral_insights": []
+    }
+  },
+
+  "interactions": {
+    "total_messages": 0,
+    "total_sessions": 0,
+    "last_session_date": null,
+    "active_topics": [],
+    "frequency_topics": {}
+  },
+
+  "health_tracking": {
+    "meal_log": [],
+    "mood_log": [],
+    "activity_log": [],
+    "water_intake": [],
+    "sleep_log": [],
+    "health_reminders": []
+  },
+
+  "memories": {
+    "personal_details": {},
+    "preferences": {},
+    "important_dates": {},
+    "achievements": [],
+    "challenges": []
+  },
+
+  "recommendations": {
+    "personalized_meals": [],
+    "health_tips": [],
+    "motivation_messages": [],
+    "next_suggestions": []
+  },
+
+  "settings": {
+    "chat_enabled": true,
+    "auto_summary": true,
+    "save_history": true,
+    "privacy_level": "private"
+  }
+}

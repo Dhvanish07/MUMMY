@@ -19,9 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 error_log("========== PACKING GENERATION REQUEST ==========");
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    error_log("PHP Error [$errno]: $errstr in $errfile:$errline");
+    return false;
+});
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyB6UC2r1a6IV5j-8zKBm0K1M5InVgy9I-8";
+$GEMINI_API_KEY = "AIzaSyBJtuBKTyFjrEE0OSBsxMsUlTaKD2NEVig";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 // Database configuration
@@ -79,37 +86,39 @@ try {
         $conn = new mysqli($db_host, $db_user, $db_password, $db_name);
         
         if ($conn->connect_error) {
-            throw new Exception('Database connection failed: ' . $conn->connect_error);
-        }
-        
-        error_log("✅ Database connected");
-        
-        // Fetch user data from database
-        $stmt = $conn->prepare('
-            SELECT id, name, email
-            FROM users
-            WHERE id = ?
-        ');
-        
-        if (!$stmt) {
-            throw new Exception('Prepare error: ' . $conn->error);
-        }
-        
-        $stmt->bind_param('i', $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
-        
-        if ($user) {
-            $userData = $user;
-            error_log("✅ User found: " . $user['name']);
-            error_log("Profile: " . json_encode($user));
+            // Database connection failed - use default data
+            error_log("⚠️ Database connection failed: " . $conn->connect_error);
+            error_log("📝 Using default user data for demo purposes");
         } else {
-            error_log("⚠️ User ID $userId not found, using defaults");
+            error_log("✅ Database connected");
+            
+            // Fetch user data from database
+            $stmt = $conn->prepare('
+                SELECT id, name, email
+                FROM users
+                WHERE id = ?
+            ');
+            
+            if (!$stmt) {
+                throw new Exception('Prepare error: ' . $conn->error);
+            }
+            
+            $stmt->bind_param('i', $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+            
+            if ($user) {
+                $userData = $user;
+                error_log("✅ User found: " . $user['name']);
+                error_log("Profile: " . json_encode($user));
+            } else {
+                error_log("⚠️ User ID $userId not found, using defaults");
+            }
+            
+            $stmt->close();
+            $conn->close();
         }
-        
-        $stmt->close();
-        $conn->close();
     } else {
         error_log("⚠️ No user ID provided, using default user data");
     }
@@ -154,6 +163,7 @@ try {
     
 } catch (Exception $e) {
     error_log("❌ ERROR: " . $e->getMessage());
+    error_log("❌ STACK: " . $e->getTraceAsString());
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }
@@ -270,20 +280,31 @@ function callGeminiAPI($prompt, $apiKey, $apiUrl) {
 
     error_log("API Request URL: $url");
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json'
+    // Use file_get_contents with stream context instead of curl
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => [
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($payload)
+            ],
+            'content' => $payload,
+            'timeout' => 60
+        ],
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ]
     ]);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
-    curl_close($ch);
+    $response = @file_get_contents($url, false, $context);
+    $httpCode = 200;
+    
+    // Get HTTP response code from headers
+    if (isset($http_response_header)) {
+        preg_match('{HTTP/\S*\s(\d{3})}', $http_response_header[0], $match);
+        $httpCode = intval($match[1]);
+    }
 
     error_log("API Response Code: $httpCode");
 
@@ -295,9 +316,9 @@ function callGeminiAPI($prompt, $apiKey, $apiUrl) {
         'content' => null
     ];
 
-    if ($curlError) {
-        error_log("❌ Curl Error: $curlError");
-        $result['error'] = $curlError;
+    if ($response === false) {
+        error_log("❌ API Request Error: " . error_get_last()['message']);
+        $result['error'] = 'Failed to connect to API';
         return $result;
     }
 

@@ -38,6 +38,8 @@ class NotificationService {
       tag = "meal-reminder"
     } = notificationData;
 
+    console.log('📤 Sending notification:', title, message);
+
     // Add to history
     const historyEntry = {
       timestamp: new Date(),
@@ -54,20 +56,30 @@ class NotificationService {
     }
 
     if (Notification.permission === "granted") {
-      const notification = new Notification(title, {
-        body: message,
-        icon: icon,
-        tag: tag,
-        requireInteraction: true
-      });
+      try {
+        const notification = new Notification(title, {
+          body: message,
+          tag: tag,
+          requireInteraction: true,
+          badge: '🔔',
+          silent: false
+        });
 
-      // Handle notification click
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-      };
+        console.log('✅ Browser notification shown:', title);
 
-      return notification;
+        // Handle notification click
+        notification.onclick = () => {
+          console.log('👆 User clicked notification:', title);
+          window.focus();
+          notification.close();
+        };
+
+        return notification;
+      } catch (error) {
+        console.error('❌ Error showing notification:', error);
+      }
+    } else {
+      console.warn('⚠️ Notification permission not granted. Current permission:', Notification.permission);
     }
   }
 

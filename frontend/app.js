@@ -5,7 +5,7 @@
 
 // Configuration
 const CONFIG = {
-    GEMINI_API_KEY: 'AIzaSyB6UC2r1a6IV5j-8zKBm0K1M5InVgy9I-8', // ✅ API key configured
+    GEMINI_API_KEY: 'AIzaSyAbJPdD8kDx1o47UCViYA2zwA3tMxGhrfo', // ✅ API key configured
     GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     STORAGE_KEY_INGREDIENTS: 'mummy_selected_ingredients',
     STORAGE_KEY_HEALTH: 'mummy_health_status',
@@ -447,13 +447,16 @@ const elements = {
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    loadSelectedItems();  // Load from localStorage first
     initializeApp();
     initializeIngredientSelector();
     renderIngredients();
+    displaySelectedItems();  // Display loaded items
     setupEventListeners();
     restoreState();
     initializeNotifications();
     checkUserLogin();
+    initializeDietPlanSelector();  // ✅ Initialize diet plan selector
 });
 
 function initializeApp() {
@@ -466,7 +469,9 @@ function checkUserLogin() {
         redirectToLogin();
     } else {
         appState.userName = localStorage.getItem('mummy_user_name') || 'Beta';
-        elements.userName.textContent = appState.userName;
+        if (elements.userName) {
+            elements.userName.textContent = appState.userName;
+        }
     }
 }
 
@@ -630,7 +635,15 @@ function createIngredientCard(itemName) {
     
     const nameDiv = document.createElement('div');
     nameDiv.className = 'ingredient-info';
-    nameDiv.innerHTML = `<p class="ingredient-name">${itemName}</p>`;
+    
+    // Get calories for this ingredient
+    const calories = getCalories(itemName);
+    const calorieDisplay = calories > 0 ? `<span class="card-calorie-badge">${calories} kcal</span>` : '';
+    
+    nameDiv.innerHTML = `
+        <p class="ingredient-name">${itemName}</p>
+        ${calorieDisplay}
+    `;
     card.appendChild(nameDiv);
 
     card.addEventListener('click', function(e) {
@@ -641,33 +654,65 @@ function createIngredientCard(itemName) {
     return card;
 }
 
+// Emoji mapping for ingredients
+const INGREDIENT_EMOJI = {
+    "Onion": "🧅", "Tomato": "🍅", "Potato": "🥔", "Ginger": "🫚", "Garlic": "🧄", "Green Chilli": "🌶️",
+    "Capsicum": "🫑", "Carrot": "🥕", "Beetroot": "🍠", "Radish": "🌱", "Brinjal": "🍆", "Cucumber": "🥒",
+    "Pumpkin": "🎃", "Bottle Gourd": "🎃", "Ridge Gourd": "🌱", "Bitter Gourd": "🥦", "Snake Gourd": "🌱",
+    "Spinach": "🥬", "Palak": "🥬", "Fenugreek Leaves": "🌿", "Methi": "🌿", "Coriander Leaves": "🌿",
+    "Mint Leaves": "🌿", "Curry Leaves": "🌿", "Dill Leaves": "🌿", "Shepu": "🌿",
+    "Broccoli": "🥦", "Zucchini": "🥒", "Lettuce": "🥬", "Red/Yellow Bell Pepper": "🫑",
+    "Mushroom": "🍄", "Baby Corn": "🌽", "Cherry Tomato": "🍅",
+    "Chicken": "🍗", "Mutton": "🥩", "Fish": "🐟", "Prawns": "🦐", "Shrimp": "🦐",
+    "Bacha Chicken": "🍗", "Leftover Chicken": "🍗",
+    "Eggs": "🥚", "Paneer": "🧀", "Tofu": "🫘", "Soya Chunks": "🫘",
+    "Milk": "🥛", "Curd": "🥛", "Butter": "🧈", "Makkhan": "🧈", "Makkhan (Butter)": "🧈",
+    "Ghee": "🧈", "Cheese": "🧀", "Cream": "🧈",
+    "Rice": "🍚", "Wheat Flour": "🌾", "Atta": "🌾", "Maida": "🌾", "Rava": "🌾",
+    "Sooji": "🌾", "Oats": "🌾",
+    "Toor Dal": "🫘", "Moong Dal": "🫘", "Masoor Dal": "🫘", "Chana Dal": "🫘",
+    "Rajma": "🫘", "Chickpeas": "🫘", "Chole": "🫘",
+    "Cumin Seeds": "🌶️", "Jeera": "🌶️", "Mustard Seeds": "🌶️", "Rai": "🌶️",
+    "Coriander Seeds": "🌶️", "Cloves": "🌶️", "Cinnamon": "🌶️", "Bay Leaf": "🌿",
+    "Turmeric Powder": "🌶️", "Red Chilli Powder": "🌶️", "Coriander Powder": "🌶️",
+    "Garam Masala": "🌶️", "Black Pepper": "🌶️",
+    "Salt": "🧂", "Sugar": "🍯", "Jaggery": "🍯", "Gur": "🍯",
+    "Cooked Rice": "🍚", "Boiled Potatoes": "🥔", "Leftover Dal": "🫘", "Leftover Sabzi": "🥬", "Chapati": "🫓"
+};
+
+function getIngredientEmoji(ingredientName) {
+    return INGREDIENT_EMOJI[ingredientName] || '🍲';
+}
+
 function toggleIngredientCard(e) {
     const card = e.target.closest('.ingredient-card');
     if (!card) return;
 
     const ingredientName = card.dataset.ingredient;
-    const index = appState.selectedIngredients.findIndex(i => i.name === ingredientName);
-
-    if (index > -1) {
+    const calories = getCalories(ingredientName) || 0;
+    const emoji = getIngredientEmoji(ingredientName);
+    
+    // Check if already selected
+    const isSelected = appState.selectedIngredients.some(i => i.name === ingredientName);
+    
+    if (isSelected) {
         // Remove
-        appState.selectedIngredients.splice(index, 1);
-        card.classList.remove('selected');
-        card.querySelector('.ingredient-add-btn').textContent = '+';
-        showMotherMessage(`${ingredientName} nikaal diya beta!`);
+        const index = appState.selectedIngredients.findIndex(i => i.name === ingredientName);
+        removeSelectedItem(index);
     } else {
-        // Add
-        appState.selectedIngredients.push({
-            name: ingredientName,
-            emoji: card.querySelector('.ingredient-image-container img').alt ? '🥬' : '❓',
-            category: appState.currentCategory
-        });
-        card.classList.add('selected');
-        card.querySelector('.ingredient-add-btn').textContent = '✓';
+        // Add - Check diet plan calories first
+        if (selectedDietPlanId) {
+            const check = canAddIngredient(calories);
+            if (!check.canAdd) {
+                alert(`❌ Cannot add: ${check.message}`);
+                return;
+            }
+            addIngredientCalories(calories);
+        }
+        
+        addSelectedItem(ingredientName, emoji, calories);
         showMotherMessage(`${ingredientName} add ho gaya beta! 🎉`);
     }
-
-    updateBasket();
-    saveState();
 }
 
 // ========================================
@@ -680,32 +725,213 @@ function renderIngredients() {
 }
 
 // ========================================
-// BASKET MANAGEMENT
+// SELECTED ITEMS MANAGEMENT
 // ========================================
 
-function updateBasket() {
-    const count = appState.selectedIngredients.length;
-    elements.basketCount.textContent = count;
-
-    if (count === 0) {
-        elements.basketContainer.innerHTML = '<p class="basket-empty">Kuch ingredients select kar...</p>';
-        elements.generateBtn.disabled = true;
+// Initialize selected items from localStorage on page load
+function loadSelectedItems() {
+    const stored = localStorage.getItem('mummy_selected_items');
+    if (stored) {
+        try {
+            appState.selectedIngredients = JSON.parse(stored);
+            console.log(`✓ Loaded ${appState.selectedIngredients.length} items from localStorage`);
+        } catch (e) {
+            console.error('Error loading items:', e);
+            appState.selectedIngredients = [];
+        }
     } else {
-        elements.basketContainer.innerHTML = '';
-        appState.selectedIngredients.forEach(ingredient => {
-            const tag = document.createElement('span');
-            tag.className = 'basket-tag';
-            tag.innerHTML = `
-                ${ingredient.emoji} ${ingredient.name}
-                <span class="basket-tag-remove">×</span>
-            `;
-            tag.querySelector('.basket-tag-remove').addEventListener('click', () => {
-                const card = document.querySelector(`[data-ingredient="${ingredient.name}"]`);
-                toggleIngredient(ingredient, card);
-            });
-            elements.basketContainer.appendChild(tag);
+        appState.selectedIngredients = [];
+    }
+}
+
+// Save selected items to localStorage
+function saveSelectedItems() {
+    localStorage.setItem('mummy_selected_items', JSON.stringify(appState.selectedIngredients));
+    console.log(`✓ Saved ${appState.selectedIngredients.length} items to localStorage`);
+}
+
+// Calculate total calories
+function getTotalCalories() {
+    return appState.selectedIngredients.reduce((total, item) => total + (item.calories || 0), 0);
+}
+
+// Display selected items in the basket
+function displaySelectedItems() {
+    const basketContainer = document.getElementById('basketContainer');
+    const basketCount = document.getElementById('basketCount');
+    const totalCaloriesHeader = document.getElementById('totalCaloriesHeader');
+    const totalCaloriesValue = document.getElementById('totalCaloriesValue');
+    const generateBtn = document.getElementById('generateBtn');
+    
+    if (!basketContainer) return;
+    
+    // Update count
+    basketCount.textContent = appState.selectedIngredients.length;
+    
+    // Clear container
+    basketContainer.innerHTML = '';
+    
+    // If empty, show placeholder and hide total
+    if (appState.selectedIngredients.length === 0) {
+        basketContainer.innerHTML = '<p class="basket-empty">Kuch ingredients select kar...</p>';
+        if (totalCaloriesHeader) totalCaloriesHeader.style.display = 'none';
+        // 🔴 DISABLE generate button when no items selected
+        if (generateBtn) {
+            generateBtn.disabled = true;
+            console.log('🔴 Generate button DISABLED (no items)');
+        }
+        return;
+    }
+    
+    // 🟢 ENABLE generate button when items are selected
+    if (generateBtn) {
+        generateBtn.disabled = false;
+        console.log('🟢 Generate button ENABLED (' + appState.selectedIngredients.length + ' items selected)');
+    }
+    
+    // Calculate totals
+    const totalCalories = getTotalCalories();
+    let maxCalories = null;
+    let mealName = null;
+    let isExceeded = false;
+    
+    // Check if diet plan is selected - use MEAL-BASED limit
+    if (selectedDietPlanId && selectedDietPlan) {
+        const mealLimit = getCurrentMealLimit(selectedDietPlanId);
+        if (mealLimit && mealLimit.mealData) {
+            maxCalories = mealLimit.mealData.max;
+            mealName = mealLimit.mealData.name;
+            isExceeded = totalCalories > maxCalories;
+        }
+    }
+    
+    // Show total in header with meal limits
+    if (totalCaloriesHeader && totalCaloriesValue) {
+        if (maxCalories) {
+            // Show with meal limit
+            const progressPercent = (totalCalories / maxCalories) * 100;
+            const color = isExceeded ? '#D62828' : '#06A77D';
+            totalCaloriesValue.innerHTML = `<span style="color: ${color}; font-weight: bold;">${totalCalories}</span> / ${maxCalories}`;
+            totalCaloriesHeader.style.color = color;
+            totalCaloriesHeader.title = `${mealName} - ${Math.round(progressPercent)}% of meal limit used`;
+        } else {
+            // Show without limit
+            totalCaloriesValue.textContent = totalCalories;
+            totalCaloriesHeader.style.color = '#ff6f00';
+        }
+        totalCaloriesHeader.style.display = 'block';
+    }
+    
+    // Show each selected item HORIZONTALLY
+    appState.selectedIngredients.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'basket-tag';
+        itemDiv.style.display = 'inline-flex';
+        itemDiv.style.justifyContent = 'space-between';
+        itemDiv.style.alignItems = 'center';
+        itemDiv.style.padding = '8px 12px';
+        itemDiv.style.backgroundColor = '#f9f9f9';
+        itemDiv.style.color = '#333333';
+        itemDiv.style.borderRadius = '6px';
+        itemDiv.style.border = '1px solid #e0e0e0';
+        itemDiv.style.gap = '8px';
+        itemDiv.style.whiteSpace = 'nowrap';
+        itemDiv.style.margin = '4px';
+        
+        const calorieText = item.calories ? `(${item.calories}kcal)` : '';
+        
+        itemDiv.innerHTML = `
+            <span style="display: flex; align-items: center; gap: 6px; color: #333333;">
+                <span style="font-size: 1.2em;">${item.emoji}</span>
+                <span style="font-weight: 500; color: #333333;">${item.name} ${calorieText}</span>
+            </span>
+            <button class="remove-item" data-index="${index}" style="background: #ff5555; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 1em; margin-left: 4px;">×</button>
+        `;
+        
+        basketContainer.appendChild(itemDiv);
+    });
+    
+    // Add warning if exceeded
+    if (isExceeded && maxCalories) {
+        const warningDiv = document.createElement('div');
+        warningDiv.style.marginTop = '8px';
+        warningDiv.style.padding = '8px';
+        warningDiv.style.backgroundColor = '#ffebee';
+        warningDiv.style.border = '1px solid #D62828';
+        warningDiv.style.borderRadius = '4px';
+        warningDiv.style.color = '#D62828';
+        warningDiv.style.fontWeight = 'bold';
+        warningDiv.style.fontSize = '0.9em';
+        warningDiv.innerHTML = `⚠️ Exceeded by ${totalCalories - maxCalories} kcal (${mealName} limit: ${maxCalories} kcal)`;
+        basketContainer.appendChild(warningDiv);
+    }
+    
+    // Add remove button event listeners
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            removeSelectedItem(index);
         });
-        elements.generateBtn.disabled = false;
+    });
+    
+    console.log(`✓ Displayed ${appState.selectedIngredients.length} items: ${totalCalories}${maxCalories ? '/' + maxCalories : ''} kcal (Meal: ${mealName || 'None'})`);
+}
+
+// Add item to selected list
+function addSelectedItem(ingredientName, emoji, calories) {
+    // Check if already selected
+    const exists = appState.selectedIngredients.find(i => i.name === ingredientName);
+    if (exists) {
+        console.log(`⚠️ ${ingredientName} already selected`);
+        return;
+    }
+    
+    // Add to list
+    appState.selectedIngredients.push({
+        name: ingredientName,
+        emoji: emoji,
+        calories: calories || 0
+    });
+    
+    console.log(`✓ Added ${ingredientName} to selected items`);
+    saveSelectedItems();
+    displaySelectedItems();
+    
+    // Mark card as selected
+    const card = document.querySelector(`[data-ingredient="${ingredientName}"]`);
+    if (card) {
+        card.classList.add('selected');
+        const btn = card.querySelector('.ingredient-add-btn');
+        if (btn) btn.textContent = '✓';
+    }
+}
+
+// Remove item from selected list
+function removeSelectedItem(index) {
+    const item = appState.selectedIngredients[index];
+    if (!item) return;
+    
+    // Remove from array
+    appState.selectedIngredients.splice(index, 1);
+    console.log(`✓ Removed ${item.name} from selected items`);
+    
+    // Save and display
+    saveSelectedItems();
+    displaySelectedItems();
+    
+    // Unmark card
+    const card = document.querySelector(`[data-ingredient="${item.name}"]`);
+    if (card) {
+        card.classList.remove('selected');
+        const btn = card.querySelector('.ingredient-add-btn');
+        if (btn) btn.textContent = '+';
+    }
+    
+    showMotherMessage(`${item.name} nikaal diya beta!`);
+    
+    // Remove from diet tracker if active
+    if (selectedDietPlanId && item.calories) {
+        removeIngredientCalories(item.calories);
     }
 }
 
@@ -769,22 +995,14 @@ async function generateRecipes() {
 
     try {
         // Get user ID from localStorage
-        const userId = localStorage.getItem('mummy_user_id');
+        let userId = localStorage.getItem('mummy_user_id');
         
         if (!userId) {
-            // Fallback: Use old method if user not logged in
-            console.log('⚠️ User not logged in, using fallback method');
-            const ingredients = appState.selectedIngredients.map(i => i.name).join(', ');
-            let healthContext = '';
-            if (appState.selectedHealth) {
-                const healthData = HEALTH_CONTEXT[appState.selectedHealth] || {};
-                healthContext = `User's Health Status: ${healthData.label} (${healthData.description})\nRecipe Focus: ${healthData.suggestions}`;
-            }
-            const prompt = constructRecipePrompt(ingredients, healthContext);
-            const recipes = await callGeminiAPI(prompt);
-            displayRecipes(recipes);
-            showMotherMessage('Dekho beta, ye recipe tumnhe pasand aayegi!');
-            return;
+            // Create a demo user for testing if not logged in
+            console.log('⚠️ User not logged in, creating demo user...');
+            userId = '1'; // Demo user ID
+            localStorage.setItem('mummy_user_id', userId);
+            localStorage.setItem('mummy_user_name', 'Guest');
         }
         
         // Call backend to generate personalized recipes based on user preferences
@@ -892,24 +1110,30 @@ async function callGeminiAPI(prompt) {
         return generateSampleRecipes();
     }
 
-    const response = await fetch(CONFIG.GEMINI_API_URL, {
+    // Gemini API requires the key in the URL, not in Authorization header
+    const url = `${CONFIG.GEMINI_API_URL}?key=${CONFIG.GEMINI_API_KEY}`;
+    
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${CONFIG.GEMINI_API_KEY}`
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'gemini-2.5-flash',
-            messages: [
+            contents: [
                 {
-                    role: 'system',
-                    content: 'You are Mummy, a loving Indian mother who suggests delicious home-style recipes.'
-                },
-                {
-                    role: 'user',
-                    content: prompt
+                    parts: [
+                        {
+                            text: prompt
+                        }
+                    ]
                 }
-            ]
+            ],
+            generationConfig: {
+                temperature: 0.7,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 2000
+            }
         })
     });
 
@@ -923,18 +1147,14 @@ async function callGeminiAPI(prompt) {
     const data = await response.json();
     console.log('Gemini API Response:', data);
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0]) {
         throw new Error('Invalid Gemini API response format');
     }
     
-    const recipeText = data.choices[0].message.content;
-    const recipes = parseRecipes(recipeText);
+    const recipeText = data.candidates[0].content.parts[0].text;
     
-    if (!recipes || recipes.length === 0) {
-        throw new Error('No recipes generated from Gemini response');
-    }
-    
-    return recipes;
+    // Return the raw recipe text - displayRecipes will format it
+    return recipeText;
 }
 
 function parseRecipes(text) {
@@ -1042,46 +1262,186 @@ function displayRecipes(recipes) {
 
     // If recipes is a string (from new backend), display it directly
     if (typeof recipes === 'string') {
-        html += `
-            <div class="recipe-card">
-                <div style="white-space: pre-wrap; line-height: 1.8; color: var(--text-color); font-size: 0.95rem;">
-                    ${recipes.replace(/\n/g, '<br>')}
+        // Try to parse JSON recipe or display as text
+        try {
+            const parsedRecipe = JSON.parse(recipes);
+            html += generateRecipeCard(parsedRecipe);
+        } catch (e) {
+            // If not JSON, display as formatted text with calorie calculation
+            const ingredients = extractIngredientsFromText(recipes);
+            const calorieInfo = ingredients.length > 0 ? calculateCalorieInfo(ingredients) : null;
+            
+            html += `
+                <div class="recipe-card">
+                    <div style="white-space: pre-wrap; line-height: 1.8; color: var(--text-color); font-size: 0.95rem;">
+                        ${recipes.replace(/\n/g, '<br>')}
+                    </div>
+                    ${calorieInfo ? `
+                        <div class="calorie-section">
+                            <div class="calorie-icon">🔥</div>
+                            <div class="calorie-content">
+                                <div class="calorie-total">Total Calories: <strong>${calorieInfo.total} kcal</strong></div>
+                                <div class="calorie-note">Per 100g (approximate)</div>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
-            </div>
-        `;
+            `;
+        }
     } else if (Array.isArray(recipes)) {
         // Old format: array of recipe objects
         recipes.forEach((recipe, index) => {
-            html += `
-                <div class="recipe-card">
-                    <div class="recipe-title">🍲 ${recipe.title}</div>
-                    <div class="recipe-subtitle">${recipe.subtitle}</div>
-
-                    <div class="recipe-section">
-                        <div class="recipe-section-title">🥘 Ingredients:</div>
-                        <ul class="recipe-list">
-                            ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
-                        </ul>
-                    </div>
-
-                    <div class="recipe-section">
-                        <div class="recipe-section-title">👩‍🍳 Instructions:</div>
-                        <ol class="recipe-list">
-                            ${recipe.instructions.map(inst => `<li>${inst}</li>`).join('')}
-                        </ol>
-                    </div>
-
-                    <div class="recipe-tips">
-                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-orange);">💚 Mummy's Tips:</div>
-                        <div class="recipe-tips-text">"${recipe.tips}"</div>
-                    </div>
-                </div>
-            `;
+            html += generateRecipeCard(recipe);
         });
     }
 
     elements.recipeContainer.innerHTML = html;
     openModal();
+}
+
+/**
+ * Generate a recipe card HTML with calorie information
+ */
+function generateRecipeCard(recipe) {
+    const ingredientsList = recipe.ingredients || [];
+    const calorieInfo = calculateCalorieInfo(ingredientsList);
+    
+    // Add calories to each ingredient for display
+    const ingredientsWithCalories = ingredientsList.map(ing => {
+        // Extract ingredient name (remove quantities)
+        let ingredientName = ing;
+        ingredientName = ingredientName.replace(/^\d+\s*(g|kg|ml|cup|tbsp|tsp|piece|pieces)?/i, '').trim();
+        ingredientName = ingredientName.replace(/\(.*?\)/g, '').trim();
+        
+        const calories = getCalories(ingredientName);
+        const calorieDisplay = calories > 0 ? `<span class="ingredient-calorie">${calories} kcal</span>` : '';
+        
+        return `<li>${ing}${calorieDisplay}</li>`;
+    });
+    
+    return `
+        <div class="recipe-card">
+            <div class="recipe-title">🍲 ${recipe.title || 'Recipe'}</div>
+            ${recipe.subtitle ? `<div class="recipe-subtitle">${recipe.subtitle}</div>` : ''}
+
+            <div class="recipe-section">
+                <div class="recipe-section-title">🥘 Ingredients:</div>
+                <ul class="recipe-list">
+                    ${ingredientsWithCalories.join('')}
+                </ul>
+            </div>
+
+            ${recipe.instructions ? `
+                <div class="recipe-section">
+                    <div class="recipe-section-title">👩‍🍳 Instructions:</div>
+                    <ol class="recipe-list">
+                        ${recipe.instructions.map(inst => `<li>${inst}</li>`).join('')}
+                    </ol>
+                </div>
+            ` : ''}
+
+            ${recipe.tips ? `
+                <div class="recipe-tips">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-orange);">💚 Mummy's Tips:</div>
+                    <div class="recipe-tips-text">"${recipe.tips}"</div>
+                </div>
+            ` : ''}
+
+            ${calorieInfo && calorieInfo.total > 0 ? `
+                <div class="calorie-section">
+                    <div class="calorie-header">
+                        <span class="calorie-icon">🔥</span>
+                        <span class="calorie-label">Nutritional Value</span>
+                    </div>
+                    <div class="calorie-breakdown">
+                        <div class="calorie-stat">
+                            <div class="calorie-stat-value">${calorieInfo.total}</div>
+                            <div class="calorie-stat-label">Total kcal</div>
+                        </div>
+                        <div class="calorie-stat">
+                            <div class="calorie-stat-value">${calorieInfo.average}</div>
+                            <div class="calorie-stat-label">Avg per item</div>
+                        </div>
+                        <div class="calorie-stat">
+                            <div class="calorie-stat-value">${calorieInfo.breakdown.length}</div>
+                            <div class="calorie-stat-label">Ingredients</div>
+                        </div>
+                    </div>
+                    <div class="calorie-note">📌 Values per 100g (approximate, for reference only)</div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Extract ingredients from text recipe format
+ */
+function extractIngredientsFromText(text) {
+    const lines = text.split('\n');
+    let ingridientsSection = false;
+    const ingredients = [];
+    
+    for (let line of lines) {
+        line = line.toLowerCase().trim();
+        
+        // Detect ingredients section
+        if (line.includes('ingredient') || line.includes('सामग्री')) {
+            ingridientsSection = true;
+            continue;
+        }
+        
+        // Stop at instructions section
+        if (line.includes('instruction') || line.includes('निर्देश') || 
+            line.includes('step') || line.includes('tips')) {
+            ingridientsSection = false;
+        }
+        
+        // Extract ingredients
+        if (ingridientsSection && line.length > 2 && !line.startsWith('-') && line) {
+            // Remove bullet points and numbers
+            const cleaned = line.replace(/^[-•*\d.)\s]+/, '').trim();
+            if (cleaned && cleaned.length > 2) {
+                ingredients.push(cleaned);
+            }
+        }
+    }
+    
+    return ingredients;
+}
+
+/**
+ * Calculate calorie information for ingredients
+ */
+function calculateCalorieInfo(ingredients) {
+    if (!ingredients || ingredients.length === 0) return null;
+    
+    let total = 0;
+    const validIngredients = [];
+    
+    for (let ingredient of ingredients) {
+        // Extract ingredient name (remove quantities)
+        let ingredientName = ingredient;
+        
+        // Remove common quantity patterns
+        ingredientName = ingredientName.replace(/^\d+\s*(g|kg|ml|cup|tbsp|tsp|piece|pieces)?/i, '').trim();
+        ingredientName = ingredientName.replace(/\(.*?\)/g, '').trim();
+        
+        const calories = getCalories(ingredientName);
+        if (calories > 0) {
+            total += calories;
+            validIngredients.push({
+                name: ingredientName,
+                calories: calories
+            });
+        }
+    }
+    
+    return {
+        total: Math.round(total),
+        average: validIngredients.length > 0 ? Math.round(total / validIngredients.length) : 0,
+        breakdown: validIngredients
+    };
 }
 
 // ========================================
@@ -1111,11 +1471,13 @@ function showLoading(show) {
 }
 
 function showMotherMessage(message) {
-    elements.motherMessage.textContent = message;
-    elements.motherMessage.style.animation = 'pulse 1s ease-in-out';
-    setTimeout(() => {
-        elements.motherMessage.style.animation = '';
-    }, 1000);
+    if (elements.motherMessage) {
+        elements.motherMessage.textContent = message;
+        elements.motherMessage.style.animation = 'pulse 1s ease-in-out';
+        setTimeout(() => {
+            elements.motherMessage.style.animation = '';
+        }, 1000);
+    }
 }
 
 function showError(message) {
@@ -1235,22 +1597,24 @@ function scheduleNotificationAt(hours, minutes, title, body) {
 // ========================================
 
 function saveState() {
-    localStorage.setItem(CONFIG.STORAGE_KEY_INGREDIENTS, JSON.stringify(appState.selectedIngredients));
+    // Note: selectedIngredients are saved in saveSelectedItems()
     localStorage.setItem(CONFIG.STORAGE_KEY_HEALTH, appState.selectedHealth || '');
     localStorage.setItem(CONFIG.STORAGE_KEY_LANGUAGE, appState.language);
     localStorage.setItem(CONFIG.STORAGE_KEY_REGION, appState.region);
 }
 
 function restoreState() {
-    const saved = localStorage.getItem(CONFIG.STORAGE_KEY_INGREDIENTS);
-    if (saved) {
-        appState.selectedIngredients = JSON.parse(saved);
-        updateBasket();
+    // Mark cards as selected if they're in selectedIngredients
+    setTimeout(() => {
         appState.selectedIngredients.forEach(ingredient => {
             const card = document.querySelector(`[data-ingredient="${ingredient.name}"]`);
-            if (card) card.classList.add('selected');
+            if (card) {
+                card.classList.add('selected');
+                const btn = card.querySelector('.ingredient-add-btn');
+                if (btn) btn.textContent = '✓';
+            }
         });
-    }
+    }, 100);
 
     const health = localStorage.getItem(CONFIG.STORAGE_KEY_HEALTH);
     if (health) {
