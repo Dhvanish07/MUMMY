@@ -18,6 +18,18 @@
                 <p class="app-subtitle" id="appSubtitle">Bhook Lagi Hai?</p>
                 <p class="header-message" id="motherMessage">Aaj khane mein kya banau beta?</p>
             </div>
+
+            <!-- Navigation Menu -->
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link active" title="Recipe Generator">
+                    <span class="nav-icon">🍳</span>
+                    <span class="nav-text">Recipes</span>
+                </a>
+                <a href="packing.html" class="nav-link" title="Packing List">
+                    <span class="nav-icon">🎒</span>
+                    <span class="nav-text">Pack My Bag</span>
+                </a>
+            </nav>
             
             <!-- Language & Region Selectors -->
             <div class="settings-panel">
@@ -43,7 +55,28 @@
             
             <div class="user-info">
                 <span id="userName">Guest</span>
+                
+                <!-- Notification Bell -->
+                <button id="notificationBell" class="notification-bell" title="View notifications">
+                    <span class="bell-icon">🔔</span>
+                    <span class="notification-count" id="notificationCount" style="display: none;">0</span>
+                </button>
+                
                 <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+            
+            <!-- Notification Dropdown -->
+            <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
+                <div class="notification-header">
+                    <h3>📬 Today's Notifications</h3>
+                    <button id="closeNotificationDropdown" class="close-btn">&times;</button>
+                </div>
+                <div id="notificationList" class="notification-list">
+                    <p class="empty-message">No notifications yet</p>
+                </div>
+                <div class="notification-footer">
+                    <button id="clearNotificationsBtn" class="clear-btn">Clear All</button>
+                </div>
             </div>
         </header>
 
@@ -154,6 +187,13 @@
 
     </div>
 
+    <!-- Notification System -->
+    <script src="notification-config.js"></script>
+    <script src="notification-service.js"></script>
+    <script src="notification-integration.js"></script>
+    <script src="notification-bell.js"></script>
+    
+    <!-- Main App -->
     <script src="app.js"></script>
 </body>
 </html>

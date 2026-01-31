@@ -81,6 +81,252 @@ body {
     align-items: center;
     gap: 1rem;
     font-size: 0.9rem;
+    position: relative;
+}
+
+.notification-bell {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 0.5rem 0.7rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.notification-bell:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+.notification-bell .bell-icon {
+    font-size: 1.3rem;
+    animation: bellRing 0.5s ease-in-out;
+}
+
+.notification-bell .notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4444;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border: 2px solid white;
+}
+
+@keyframes bellRing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    max-height: 70vh;
+    background: linear-gradient(135deg, #FEFDFB 0%, #FFF5E1 100%);
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 15px 50px rgba(255, 107, 53, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    animation: popupCenter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+@keyframes popupCenter {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: none;
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.notification-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification-header .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: white;
+    padding: 0.3rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.notification-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Backdrop overlay for centered modal */
+.notification-dropdown::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.notification-list {
+    overflow-y: auto;
+    flex: 1;
+    max-height: 350px;
+    padding: 0.5rem 0;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 107, 53, 0.3);
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 107, 53, 0.5);
+}
+
+.notification-list .empty-message {
+    text-align: center;
+    color: var(--text-light);
+    padding: 2rem 1rem;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+.notification-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: transparent;
+    border-left: 4px solid transparent;
+}
+
+.notification-item:hover {
+    background: rgba(255, 107, 53, 0.08);
+    border-left-color: var(--primary-orange);
+    padding-left: calc(1.5rem - 4px);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item-time {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+
+.notification-item-title {
+    font-weight: 600;
+    color: var(--primary-orange);
+    margin-bottom: 0.2rem;
+    font-size: 0.95rem;
+}
+
+.notification-item-message {
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.notification-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 107, 53, 0.1);
+    text-align: center;
+    background: rgba(255, 107, 53, 0.02);
+}
+
+.clear-btn {
+    background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.clear-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
+}
+
+.clear-btn:active {
+    transform: translateY(0);
 }
 
 .logout-btn {
@@ -97,6 +343,51 @@ body {
 .logout-btn:hover {
     background: rgba(255, 255, 255, 0.35);
     transform: translateY(-2px);
+}
+
+/* ========================================
+   MAIN NAVIGATION
+   ======================================== */
+
+.main-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-icon {
+    font-size: 1.1rem;
+}
+
+.nav-text {
+    white-space: nowrap;
 }
 
 /* ========================================

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Let's Pack My Bag – MUMMY</title>
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --primary-warm: #FFD166;
+            --primary-green: #06A77D;
+            --text-dark: #2D3436;
+            --bg-light: #FEFDFB;
+            --bg-warm: #FFF5E1;
+            --border-color: #FFE5CC;
+            --shadow-medium: 0 4px 16px rgba(255, 107, 53, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-warm) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            color: var(--primary-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .packing-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            background: var(--bg-warm);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.2);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider-input {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--border-color);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-orange);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .slider-input::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-orange);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .slider-value {
+            font-weight: 700;
+            color: var(--primary-orange);
+            font-size: 1.2rem;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-button {
+            flex: 1;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-warm));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+        }
+
+        .form-button.secondary {
+            background: #999;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: var(--primary-orange);
+            font-weight: 600;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .packing-result {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .packing-result.active {
+            display: block;
+        }
+
+        .packing-section {
+            background: var(--bg-warm);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-orange);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: var(--primary-orange);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-content {
+            line-height: 1.8;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+
+        .mother-message {
+            background: linear-gradient(135deg, rgba(6, 168, 125, 0.1), rgba(255, 107, 53, 0.1));
+            border-left: 4px solid var(--primary-green);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            font-style: italic;
+            color: var(--text-dark);
+            line-height: 1.8;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border-left: 4px solid #D62828;
+            padding: 1rem;
+            border-radius: 8px;
+            color: #D62828;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .nav-link-recipe {
+            color: var(--primary-orange);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link-recipe:hover {
+            color: var(--primary-green);
+            transform: translateX(-2px);
+        }
+
+        .breadcrumb-sep {
+            color: #999;
+        }
+
+        .nav-current {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .packing-container {
+                padding: 1.5rem;
+            }
+
+            .header-title {
+                font-size: 2rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="breadcrumb-nav">
+            <a href="index.html" class="nav-link-recipe">🍳 Recipes</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="nav-current">🎒 Pack My Bag</span>
+        </nav>
+
+        <header>
+            <div class="header-title">🎒</div>
+            <h1 class="header-subtitle">Let's Pack My Bag, Beta!</h1>
+            <p style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">Mummy help karti hai tumhare liye! 💚</p>
+        </header>
+
+        <div class="packing-container">
+            <form id="packingForm">
+                <!-- Destination Input -->
+                <div class="form-section">
+                    <label class="form-label">🌍 Kaha jaa rahe ho beta?</label>
+                    <label class="form-label" style="font-size: 0.85rem; font-weight: 400; color: #666; margin-bottom: 0.5rem;">Where are you traveling?</label>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        id="destination" 
+                        placeholder="e.g., Goa, Delhi, Himachal Pradesh"
+                        required
+                    >
+                </div>
+
+                <!-- Days Slider -->
+                <div class="form-section">
+                    <label class="form-label">⏰ Kitne din rehna hai?</label>
+                    <label class="form-label" style="font-size: 0.85rem; font-weight: 400; color: #666; margin-bottom: 1rem;">How many days will you be there?</label>
+                    <div class="slider-container">
+                        <input 
+                            type="range" 
+                            class="slider-input" 
+                            id="daysSlider" 
+                            min="1" 
+                            max="30" 
+                            value="5"
+                            required
+                        >
+                        <span class="slider-value" id="daysValue">5 days</span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="form-button">Generate Packing List 🎒</button>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+            </form>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                ⏳ Mummy soch rahi hai... ek minute...
+            </div>
+
+            <!-- Results -->
+            <div class="packing-result" id="packingResult">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const daysSlider = document.getElementById('daysSlider');
+        const daysValue = document.getElementById('daysValue');
+        const packingForm = document.getElementById('packingForm');
+        const loadingDiv = document.getElementById('loading');
+        const resultDiv = document.getElementById('packingResult');
+        const resultContent = document.getElementById('resultContent');
+        const errorDiv = document.getElementById('errorMessage');
+
+        // Update days display
+        daysSlider.addEventListener('input', (e) => {
+            const days = e.target.value;
+            daysValue.textContent = days + (days === '1' ? ' day' : ' days');
+        });
+
+        // Handle form submission
+        packingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const destination = document.getElementById('destination').value.trim();
+            const days = document.getElementById('daysSlider').value;
+
+            if (!destination) {
+                showError('Please enter your destination');
+                return;
+            }
+
+            await generatePackingList(destination, days);
+        });
+
+        async function generatePackingList(destination, days) {
+            loadingDiv.classList.add('active');
+            resultDiv.classList.remove('active');
+            errorDiv.classList.remove('active');
+
+            try {
+                console.log('📤 Generating packing list for:', destination, days, 'days');
+
+                // Get user ID from localStorage if logged in
+                const userId = localStorage.getItem('mummy_user_id');
+                console.log('👤 User logged in as:', userId);
+
+                const response = await fetch('http://localhost/mummy/generate_packing.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        destination: destination,
+                        days: parseInt(days),
+                        user_id: userId ? parseInt(userId) : null
+                    })
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Packing list received:', data);
+
+                if (data.success && data.packing_list) {
+                    displayPackingList(data.packing_list, destination, days);
+                } else {
+                    throw new Error(data.error || 'Failed to generate packing list');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showError('Error: ' + error.message + '. Check browser console.');
+            } finally {
+                loadingDiv.classList.remove('active');
+            }
+        }
+
+        function displayPackingList(packingList, destination, days) {
+            resultContent.innerHTML = `
+                <h2 style="color: var(--primary-orange); margin-bottom: 1rem;">🎒 Packing List for ${destination}</h2>
+                <p style="color: #666; margin-bottom: 1.5rem;">📅 ${days} ${days === '1' ? 'day' : 'days'} trip</p>
+                <div id="packingContent" style="white-space: pre-wrap; line-height: 1.8; color: var(--text-dark);">${escapeHtml(packingList)}</div>
+            `;
+            resultDiv.classList.add('active');
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Set active nav link
+        window.addEventListener('load', () => {
+            const userName = localStorage.getItem('mummy_user_name');
+            if (userName) {
+                console.log('👤 User logged in as:', userName);
+            }
+        });
+    </script>
+</body>
+</html>

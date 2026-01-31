@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "destination": "Goa",
+    "days": 5,
+    "gender": "female",
+    "preferences": {
+      "climate": "tropical",
+      "activity_level": "moderate",
+      "budget": "standard"
+    }
+  },
+  {
+    "id": 2,
+    "destination": "Kashmir",
+    "days": 7,
+    "gender": "male",
+    "preferences": {
+      "climate": "cold",
+      "activity_level": "high",
+      "budget": "premium"
+    }
+  },
+  {
+    "id": 3,
+    "destination": "Himachal Pradesh",
+    "days": 10,
+    "gender": "female",
+    "preferences": {
+      "climate": "mountain",
+      "activity_level": "high",
+      "budget": "budget"
+    }
+  },
+  {
+    "id": 4,
+    "destination": "Rajasthan",
+    "days": 4,
+    "gender": "male",
+    "preferences": {
+      "climate": "desert",
+      "activity_level": "moderate",
+      "budget": "standard"
+    }
+  },
+  {
+    "id": 5,
+    "destination": "Kerala",
+    "days": 6,
+    "gender": "female",
+    "preferences": {
+      "climate": "tropical",
+      "activity_level": "low",
+      "budget": "standard"
+    }
+  }
+]

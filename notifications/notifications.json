@@ -1,0 +1,101 @@
+{
+  "notifications": [
+    {
+      "id": 1,
+      "title": "Wake-up Hydration",
+      "time": "06:00",
+      "endTime": "07:30",
+      "category": "early-morning",
+      "message": "Uth gaya? Thoda paani pi le pehle.",
+      "purpose": "Wake-up hydration & digestion",
+      "suggestions": ["Warm water", "Tea", "Coffee", "Milk", "Light snack (biscuit/toast)"],
+      "icon": "🌄"
+    },
+    {
+      "id": 2,
+      "title": "Breakfast Time",
+      "time": "08:00",
+      "endTime": "10:00",
+      "category": "breakfast",
+      "message": "Nashta miss mat karna beta.",
+      "purpose": "Energy for work/school/college",
+      "suggestions": [
+        "Idli / Dosa / Upma",
+        "Poha / Sheera",
+        "Paratha + sabzi",
+        "Bread + butter / omelette",
+        "Milk / tea / coffee"
+      ],
+      "icon": "☀️"
+    },
+    {
+      "id": 3,
+      "title": "Mid-Morning Snack",
+      "time": "11:00",
+      "endTime": "12:00",
+      "category": "mid-morning-snack",
+      "message": "Thoda phal kha le.",
+      "purpose": "Prevent weakness & acidity",
+      "suggestions": ["Fruit", "Coconut water", "Chana / peanuts", "Tea"],
+      "icon": "🍎",
+      "importance": "Prevents long gap between breakfast & lunch"
+    },
+    {
+      "id": 4,
+      "title": "Lunch",
+      "time": "13:00",
+      "endTime": "14:30",
+      "category": "lunch",
+      "message": "Lunch theek se kha—sirf snacks nahi.",
+      "purpose": "Most Important Meal",
+      "suggestions": [
+        "Rice or roti",
+        "Dal / sabzi",
+        "Curd",
+        "Occasionally non-veg"
+      ],
+      "icon": "🍽️",
+      "importance": "Heavy meal - Proper sitting & eating required"
+    },
+    {
+      "id": 5,
+      "title": "Evening Snack",
+      "time": "16:30",
+      "endTime": "18:00",
+      "category": "evening-snack",
+      "message": "Shaam ka kuch kha le.",
+      "purpose": "Recharge & avoid overeating at dinner",
+      "suggestions": ["Tea / coffee", "Samosa / bhaji", "Biscuits", "Fruits / sprouts"],
+      "icon": "☕"
+    },
+    {
+      "id": 6,
+      "title": "Dinner",
+      "time": "19:30",
+      "endTime": "21:30",
+      "category": "dinner",
+      "message": "Raat ko halka kha.",
+      "purpose": "Light but satisfying meal",
+      "suggestions": [
+        "Roti + sabzi",
+        "Rice + dal",
+        "Khichdi",
+        "Leftover lunch"
+      ],
+      "icon": "🌙",
+      "importance": "Should be lighter than lunch"
+    },
+    {
+      "id": 7,
+      "title": "Bedtime Drink",
+      "time": "22:00",
+      "endTime": "23:30",
+      "category": "bedtime",
+      "message": "Sone se pehle doodh le le.",
+      "purpose": "Optional warm drink before sleep",
+      "suggestions": ["Warm milk", "Haldi milk (when sick)"],
+      "icon": "🥛",
+      "optional": true
+    }
+  ]
+}

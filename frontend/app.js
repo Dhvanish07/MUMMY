@@ -5,8 +5,8 @@
 
 // Configuration
 const CONFIG = {
-    GEMINI_API_KEY: 'AIzaSyBbTuAMZwf1Ob8BepS5BAgCdZXEei6RxLQ',
-    GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    GEMINI_API_KEY: 'AIzaSyB6UC2r1a6IV5j-8zKBm0K1M5InVgy9I-8', // ✅ API key configured
+    GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     STORAGE_KEY_INGREDIENTS: 'mummy_selected_ingredients',
     STORAGE_KEY_HEALTH: 'mummy_health_status',
     STORAGE_KEY_USER: 'mummy_user_logged_in',
@@ -768,22 +768,56 @@ async function generateRecipes() {
     showMotherMessage('Mummy soch rahi hai... ek minute...');
 
     try {
-        const ingredients = appState.selectedIngredients.map(i => i.name).join(', ');
+        // Get user ID from localStorage
+        const userId = localStorage.getItem('mummy_user_id');
         
-        // Enrich health context with detailed information
-        let healthContext = '';
-        if (appState.selectedHealth) {
-            const healthData = HEALTH_CONTEXT[appState.selectedHealth] || {};
-            healthContext = `User's Health Status: ${healthData.label} (${healthData.description})\nRecipe Focus: ${healthData.suggestions}`;
+        if (!userId) {
+            // Fallback: Use old method if user not logged in
+            console.log('⚠️ User not logged in, using fallback method');
+            const ingredients = appState.selectedIngredients.map(i => i.name).join(', ');
+            let healthContext = '';
+            if (appState.selectedHealth) {
+                const healthData = HEALTH_CONTEXT[appState.selectedHealth] || {};
+                healthContext = `User's Health Status: ${healthData.label} (${healthData.description})\nRecipe Focus: ${healthData.suggestions}`;
+            }
+            const prompt = constructRecipePrompt(ingredients, healthContext);
+            const recipes = await callGeminiAPI(prompt);
+            displayRecipes(recipes);
+            showMotherMessage('Dekho beta, ye recipe tumnhe pasand aayegi!');
+            return;
         }
         
-        const prompt = constructRecipePrompt(ingredients, healthContext);
-        const recipes = await callGeminiAPI(prompt);
+        // Call backend to generate personalized recipes based on user preferences
+        console.log('📤 Fetching personalized recipes for user:', userId);
         
-        displayRecipes(recipes);
-        showMotherMessage('Dekho beta, ye recipe tumnhe pasand aayegi!');
+        const backendUrl = `http://localhost/mummy/backend/generate_recipes.php?user_id=${userId}`;
+        console.log('🔗 Backend URL:', backendUrl);
+        
+        const response = await fetch(backendUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Backend error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Recipes received:', data);
+
+        if (data.success && data.recipe) {
+            // Parse the recipe and display it
+            displayRecipes(data.recipe);
+            showMotherMessage(`Dekho ${data.user_name}, ye recipe sirf tumare liye! 💚`);
+        } else {
+            throw new Error(data.error || 'Failed to generate recipes');
+        }
     } catch (error) {
-        console.error('Error generating recipes:', error);
+        console.error('❌ Error generating recipes:', error);
         showMotherMessage('Beta, internet slow hai... dubara try kar.');
         showError('Failed to generate recipes. Please try again.');
     } finally {
@@ -1003,35 +1037,48 @@ function generateSampleRecipes() {
 // ========================================
 
 function displayRecipes(recipes) {
-    let html = '<h2 style="color: var(--primary-orange); margin-bottom: 1.5rem;">Aaj ke liye ye recipes hain beta! 👩‍🍳</h2>';
+    // Handle both old array format and new string format from backend
+    let html = '<h2 style="color: var(--primary-orange); margin-bottom: 1.5rem;">Aaj ke liye ye recipe hai beta! 👩‍🍳</h2>';
 
-    recipes.forEach((recipe, index) => {
+    // If recipes is a string (from new backend), display it directly
+    if (typeof recipes === 'string') {
         html += `
             <div class="recipe-card">
-                <div class="recipe-title">🍲 ${recipe.title}</div>
-                <div class="recipe-subtitle">${recipe.subtitle}</div>
-
-                <div class="recipe-section">
-                    <div class="recipe-section-title">🥘 Ingredients:</div>
-                    <ul class="recipe-list">
-                        ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
-                    </ul>
-                </div>
-
-                <div class="recipe-section">
-                    <div class="recipe-section-title">👩‍🍳 Instructions:</div>
-                    <ol class="recipe-list">
-                        ${recipe.instructions.map(inst => `<li>${inst}</li>`).join('')}
-                    </ol>
-                </div>
-
-                <div class="recipe-tips">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-orange);">💚 Mummy's Tips:</div>
-                    <div class="recipe-tips-text">"${recipe.tips}"</div>
+                <div style="white-space: pre-wrap; line-height: 1.8; color: var(--text-color); font-size: 0.95rem;">
+                    ${recipes.replace(/\n/g, '<br>')}
                 </div>
             </div>
         `;
-    });
+    } else if (Array.isArray(recipes)) {
+        // Old format: array of recipe objects
+        recipes.forEach((recipe, index) => {
+            html += `
+                <div class="recipe-card">
+                    <div class="recipe-title">🍲 ${recipe.title}</div>
+                    <div class="recipe-subtitle">${recipe.subtitle}</div>
+
+                    <div class="recipe-section">
+                        <div class="recipe-section-title">🥘 Ingredients:</div>
+                        <ul class="recipe-list">
+                            ${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="recipe-section">
+                        <div class="recipe-section-title">👩‍🍳 Instructions:</div>
+                        <ol class="recipe-list">
+                            ${recipe.instructions.map(inst => `<li>${inst}</li>`).join('')}
+                        </ol>
+                    </div>
+
+                    <div class="recipe-tips">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-orange);">💚 Mummy's Tips:</div>
+                        <div class="recipe-tips-text">"${recipe.tips}"</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
 
     elements.recipeContainer.innerHTML = html;
     openModal();
@@ -1142,17 +1189,9 @@ function updateUILanguage() {
 // ========================================
 
 function initializeNotifications() {
-    if (!('Notification' in window)) return;
-
-    // Request permission
-    if (Notification.permission === 'granted') {
-        scheduleNotifications();
-    } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                scheduleNotifications();
-            }
-        });
+    // Initialize MUMMY notification system with meal reminders
+    if (typeof initializeMummyNotifications === 'function') {
+        initializeMummyNotifications();
     }
 }
 
@@ -1247,3 +1286,61 @@ function logout() {
     localStorage.removeItem('mummy_user_name');
     redirectToLogin();
 }
+
+// ========================================
+// TEST NOTIFICATIONS
+// ========================================
+
+/**
+ * Global function to test notifications
+ * Usage in browser console: testNotification() or testNotification("Your custom message")
+ */
+window.testNotification = function(message = "Test notification - Check the bell!") {
+    if (typeof notificationServiceInstance !== 'undefined' && notificationServiceInstance) {
+        notificationServiceInstance.sendTestNotification(message);
+        console.log("✅ Test notification sent! Click the bell (🔔) to view it.");
+    } else {
+        console.error("❌ Notification service not available. Please refresh the page.");
+    }
+};
+
+/**
+ * Global function to send multiple test notifications
+ * Usage: sendMultipleTests(3)
+ */
+window.sendMultipleTests = function(count = 3) {
+    if (typeof notificationServiceInstance !== 'undefined' && notificationServiceInstance) {
+        const messages = [
+            "🍳 Time to eat breakfast!",
+            "🥗 Lunch reminder - don't skip meals!",
+            "🍜 Evening meal time - stay healthy!",
+            "🥤 Hydration reminder - drink water!",
+            "🥑 Snack time - fuel your day!"
+        ];
+        
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const msg = messages[i % messages.length];
+                notificationServiceInstance.sendTestNotification(msg);
+                console.log(`✅ Notification ${i + 1}/${count} sent`);
+            }, i * 500);
+        }
+        console.log(`✅ ${count} test notifications scheduled!`);
+    } else {
+        console.error("❌ Notification service not available.");
+    }
+};
+
+/**
+ * View all notifications in console
+ * Usage: viewNotifications()
+ */
+window.viewNotifications = function() {
+    if (typeof notificationServiceInstance !== 'undefined' && notificationServiceInstance) {
+        const notifications = notificationServiceInstance.getTodayNotifications();
+        console.log("📬 Today's Notifications:", notifications);
+        console.log(`Total: ${notifications.length}`);
+    } else {
+        console.error("❌ Notification service not available.");
+    }
+};

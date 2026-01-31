@@ -1,0 +1,138 @@
+{
+  "mealSchedule": [
+    {
+      "sequence": 1,
+      "time": "06:00",
+      "mealName": "Early Morning",
+      "duration": "06:00 - 07:30",
+      "category": "wake-up",
+      "mumSays": "Uth gaya? Thoda paani pi le pehle.",
+      "purpose": "Wake-up hydration & digestion",
+      "whatToEat": [
+        "Warm water",
+        "Tea ☕",
+        "Coffee",
+        "Milk",
+        "Light snack (biscuit / toast)"
+      ],
+      "culturalNote": "Indian morning ritual - water first thing after waking",
+      "emoji": "🌄"
+    },
+    {
+      "sequence": 2,
+      "time": "08:00",
+      "mealName": "Breakfast",
+      "duration": "08:00 - 10:00",
+      "category": "breakfast",
+      "mumSays": "Nashta miss mat karna beta.",
+      "purpose": "Energy for work/school/college",
+      "whatToEat": [
+        "Idli / Dosa / Upma",
+        "Poha / Sheera",
+        "Paratha + sabzi",
+        "Bread + butter / omelette",
+        "Milk / tea / coffee"
+      ],
+      "culturalNote": "Traditional Indian breakfast varieties",
+      "emoji": "☀️"
+    },
+    {
+      "sequence": 3,
+      "time": "11:00",
+      "mealName": "Mid-Morning Snack",
+      "duration": "11:00 - 12:00",
+      "category": "snack",
+      "mumSays": "Thoda phal kha le.",
+      "purpose": "Prevent weakness & acidity",
+      "whatToEat": [
+        "Fruit 🍎🍌",
+        "Coconut water",
+        "Chana / peanuts",
+        "Tea"
+      ],
+      "culturalNote": "Bridges long gap between breakfast and lunch",
+      "emoji": "🍎"
+    },
+    {
+      "sequence": 4,
+      "time": "13:00",
+      "mealName": "Lunch",
+      "duration": "13:00 - 14:30",
+      "category": "main-meal",
+      "mumSays": "Lunch theek se kha—sirf snacks nahi.",
+      "purpose": "MOST IMPORTANT MEAL",
+      "whatToEat": [
+        "Rice or roti",
+        "Dal / sabzi",
+        "Curd",
+        "Occasionally non-veg"
+      ],
+      "culturalNote": "Heavy meal - Proper sitting & eating essential",
+      "emphasis": "MOST IMPORTANT",
+      "emoji": "🍽️"
+    },
+    {
+      "sequence": 5,
+      "time": "16:30",
+      "mealName": "Evening Snack",
+      "duration": "16:30 - 18:00",
+      "category": "snack",
+      "mumSays": "Shaam ka kuch kha le.",
+      "purpose": "Recharge & avoid overeating at dinner",
+      "whatToEat": [
+        "Tea / coffee",
+        "Samosa / bhaji",
+        "Biscuits",
+        "Fruits / sprouts"
+      ],
+      "culturalNote": "Student reality: Mess snacks, Street food",
+      "emoji": "☕"
+    },
+    {
+      "sequence": 6,
+      "time": "19:30",
+      "mealName": "Dinner",
+      "duration": "19:30 - 21:30",
+      "category": "dinner",
+      "mumSays": "Raat ko halka kha.",
+      "purpose": "Light but satisfying meal",
+      "whatToEat": [
+        "Roti + sabzi",
+        "Rice + dal",
+        "Khichdi",
+        "Leftover lunch (common)"
+      ],
+      "culturalNote": "Should be lighter than lunch",
+      "rule": "Lighter than lunch",
+      "emoji": "🌙"
+    },
+    {
+      "sequence": 7,
+      "time": "22:00",
+      "mealName": "Bedtime",
+      "duration": "22:00 - 23:30",
+      "category": "optional",
+      "mumSays": "Sone se pehle doodh le le.",
+      "purpose": "Optional warm drink before sleep",
+      "whatToEat": [
+        "Warm milk 🥛",
+        "Haldi milk (when sick)"
+      ],
+      "culturalNote": "Traditional bedtime ritual",
+      "optional": true,
+      "emoji": "🥛"
+    }
+  ],
+  "totals": {
+    "mealsPerDay": 7,
+    "optionalMeals": 1,
+    "mainMeals": 3,
+    "snacks": 2
+  },
+  "culturalContext": {
+    "language": "Hindi/English mixed",
+    "culture": "Indian (specifically South Asian)",
+    "tone": "Motherly (MUMMY care)",
+    "purpose": "Health & nutrition awareness"
+  }
+}

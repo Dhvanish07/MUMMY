@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUMMY Notification System - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .permission-status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .permission-status.granted {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .permission-status.denied {
+            background: #fadbd8;
+            color: #c0392b;
+            border: 2px solid #c0392b;
+        }
+
+        .permission-status.default {
+            background: #fef5e7;
+            color: #f39c12;
+            border: 2px solid #f39c12;
+        }
+
+        .meals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .meal-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .meal-card.important {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+        }
+
+        .meal-emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .meal-time {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .meal-name {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .meal-message {
+            font-size: 0.95em;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .meal-suggestions {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        .meal-suggestions strong {
+            color: #333;
+        }
+
+        .btn-notify {
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notify:hover {
+            background: #229954;
+            transform: scale(1.05);
+        }
+
+        .log-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .log-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .log-entry.success {
+            border-left-color: #27ae60;
+        }
+
+        .log-entry.error {
+            border-left-color: #e74c3c;
+        }
+
+        .log-entry timestamp {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-important {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .badge-optional {
+            background: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 MUMMY Notification System</h1>
+        <p class="subtitle">Test & Schedule Daily Meal Reminders</p>
+
+        <div class="permission-status" id="permissionStatus">
+            Checking notification permission...
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="requestPermission()">🔔 Enable Notifications</button>
+            <button class="btn-secondary" onclick="scheduleAllNotifications()">⏰ Schedule All Reminders</button>
+            <button class="btn-danger" onclick="cancelAllNotifications()">❌ Cancel All</button>
+        </div>
+
+        <div class="meals-grid" id="mealsContainer"></div>
+
+        <div class="log-section">
+            <h3>📋 Activity Log</h3>
+            <div id="logContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // Notification data
+        const meals = [
+            {
+                id: 1,
+                emoji: "🌄",
+                time: "06:00",
+                name: "Early Morning",
+                mumSays: "Uth gaya? Thoda paani pi le pehle.",
+                purpose: "Wake-up hydration & digestion",
+                suggestions: ["Warm water", "Tea", "Coffee", "Milk", "Light snack"],
+                important: false
+            },
+            {
+                id: 2,
+                emoji: "☀️",
+                time: "08:00",
+                name: "Breakfast",
+                mumSays: "Nashta miss mat karna beta.",
+                purpose: "Energy for work/school/college",
+                suggestions: ["Idli/Dosa/Upma", "Poha/Sheera", "Paratha+sabzi", "Bread+butter/omelette"],
+                important: false
+            },
+            {
+                id: 3,
+                emoji: "🍎",
+                time: "11:00",
+                name: "Mid-Morning Snack",
+                mumSays: "Thoda phal kha le.",
+                purpose: "Prevent weakness & acidity",
+                suggestions: ["Fruit", "Coconut water", "Chana/peanuts", "Tea"],
+                important: false
+            },
+            {
+                id: 4,
+                emoji: "🍽️",
+                time: "13:00",
+                name: "Lunch",
+                mumSays: "Lunch theek se kha—sirf snacks nahi.",
+                purpose: "MOST IMPORTANT MEAL",
+                suggestions: ["Rice or roti", "Dal/sabzi", "Curd", "Occasionally non-veg"],
+                important: true
+            },
+            {
+                id: 5,
+                emoji: "☕",
+                time: "16:30",
+                name: "Evening Snack",
+                mumSays: "Shaam ka kuch kha le.",
+                purpose: "Recharge & avoid overeating at dinner",
+                suggestions: ["Tea/coffee", "Samosa/bhaji", "Biscuits", "Fruits/sprouts"],
+                important: false
+            },
+            {
+                id: 6,
+                emoji: "🌙",
+                time: "19:30",
+                name: "Dinner",
+                mumSays: "Raat ko halka kha.",
+                purpose: "Light but satisfying meal",
+                suggestions: ["Roti+sabzi", "Rice+dal", "Khichdi", "Leftover lunch"],
+                important: false
+            },
+            {
+                id: 7,
+                emoji: "🥛",
+                time: "22:00",
+                name: "Bedtime",
+                mumSays: "Sone se pehle doodh le le.",
+                purpose: "Optional warm drink before sleep",
+                suggestions: ["Warm milk", "Haldi milk"],
+                important: false,
+                optional: true
+            }
+        ];
+
+        const logs = [];
+        const activeNotifications = new Map();
+
+        // Initialize
+        function init() {
+            checkPermission();
+            renderMeals();
+            addLog("System initialized", "success");
+        }
+
+        // Check notification permission
+        function checkPermission() {
+            if (!("Notification" in window)) {
+                updatePermissionStatus("Notifications not supported", "denied");
+                addLog("❌ Notifications not supported in this browser", "error");
+                return;
+            }
+
+            const permission = Notification.permission;
+            updatePermissionStatus(permission);
+
+            if (permission === "granted") {
+                addLog("✅ Notification permission granted", "success");
+            } else if (permission === "denied") {
+                addLog("❌ Notification permission denied", "error");
+            } else {
+                addLog("⚠️ Notification permission pending", "default");
+            }
+        }
+
+        // Request permission
+        async function requestPermission() {
+            if (!("Notification" in window)) {
+                addLog("❌ Notifications not supported", "error");
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                updatePermissionStatus(permission);
+                addLog(`✅ Permission request result: ${permission}`, "success");
+            } catch (err) {
+                addLog(`❌ Error requesting permission: ${err.message}`, "error");
+            }
+        }
+
+        // Update permission status display
+        function updatePermissionStatus(status) {
+            const statusEl = document.getElementById("permissionStatus");
+            const messages = {
+                granted: "✅ Notifications Enabled - You'll receive reminders!",
+                denied: "❌ Notifications Denied - Please enable in browser settings",
+                default: "⚠️ Notifications Not Yet Enabled - Click button above"
+            };
+
+            statusEl.textContent = messages[status] || status;
+            statusEl.className = `permission-status ${status}`;
+        }
+
+        // Send notification
+        function sendNotification(meal) {
+            if (Notification.permission !== "granted") {
+                addLog(`⚠️ Cannot send notification: permission not granted`, "error");
+                return;
+            }
+
+            const notification = new Notification(`${meal.emoji} ${meal.name}`, {
+                body: meal.mumSays,
+                icon: "🔔",
+                tag: meal.id,
+                requireInteraction: true
+            });
+
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+
+            addLog(`✅ Notification sent: ${meal.name} (${meal.time})`, "success");
+        }
+
+        // Schedule notification for specific time
+        function scheduleNotification(meal) {
+            const [hours, minutes] = meal.time.split(":").map(Number);
+            const now = new Date();
+            const scheduledTime = new Date();
+            scheduledTime.setHours(hours, minutes, 0, 0);
+
+            // If time has passed today, schedule for tomorrow
+            if (scheduledTime <= now) {
+                scheduledTime.setDate(scheduledTime.getDate() + 1);
+            }
+
+            const delayMs = scheduledTime - now;
+            const delayMin = Math.round(delayMs / 60000);
+
+            const timeoutId = setTimeout(() => {
+                sendNotification(meal);
+            }, delayMs);
+
+            activeNotifications.set(meal.id, timeoutId);
+            addLog(`⏰ Scheduled: ${meal.name} at ${meal.time} (in ${delayMin} minutes)`, "success");
+        }
+
+        // Schedule all notifications
+        function scheduleAllNotifications() {
+            if (activeNotifications.size > 0) {
+                addLog("⚠️ Clear existing notifications first", "error");
+                return;
+            }
+
+            meals.forEach(meal => scheduleNotification(meal));
+            addLog("🎯 All 7 meal notifications scheduled!", "success");
+        }
+
+        // Cancel specific notification
+        function cancelNotification(mealId) {
+            if (activeNotifications.has(mealId)) {
+                clearTimeout(activeNotifications.get(mealId));
+                activeNotifications.delete(mealId);
+                addLog("❌ Notification cancelled", "success");
+            }
+        }
+
+        // Cancel all notifications
+        function cancelAllNotifications() {
+            activeNotifications.forEach((id) => clearTimeout(id));
+            activeNotifications.clear();
+            addLog("❌ All notifications cancelled", "success");
+        }
+
+        // Render meals UI
+        function renderMeals() {
+            const container = document.getElementById("mealsContainer");
+            container.innerHTML = meals.map(meal => `
+                <div class="meal-card ${meal.important ? 'important' : ''}">
+                    <div class="meal-emoji">${meal.emoji}</div>
+                    <div class="meal-time">${meal.time}</div>
+                    <div class="meal-name">
+                        ${meal.name}
+                        ${meal.important ? '<span class="badge badge-important">IMPORTANT</span>' : ''}
+                        ${meal.optional ? '<span class="badge badge-optional">OPTIONAL</span>' : ''}
+                    </div>
+                    <div class="meal-message">"${meal.mumSays}"</div>
+                    <div class="meal-purpose"><strong>Purpose:</strong> ${meal.purpose}</div>
+                    <div class="meal-suggestions">
+                        <strong>Eat:</strong> ${meal.suggestions.join(", ")}
+                    </div>
+                    <button class="btn-notify" onclick="sendNotification(${JSON.stringify(meal)})">
+                        📢 Send Now
+                    </button>
+                    <button class="btn-notify" style="background: #3498db; margin-left: 5px;" onclick="scheduleNotification(${JSON.stringify(meal)})">
+                        ⏰ Schedule
+                    </button>
+                </div>
+            `).join("");
+        }
+
+        // Add log entry
+        function addLog(message, type = "default") {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = {
+                message,
+                type,
+                timestamp
+            };
+            logs.unshift(entry);
+
+            // Keep only last 20 logs
+            if (logs.length > 20) logs.pop();
+
+            updateLogDisplay();
+        }
+
+        // Update log display
+        function updateLogDisplay() {
+            const logContainer = document.getElementById("logContainer");
+            logContainer.innerHTML = logs.map(log => `
+                <div class="log-entry ${log.type}">
+                    <strong>${log.message}</strong>
+                    <br>
+                    <timestamp>${log.timestamp}</timestamp>
+                </div>
+            `).join("");
+        }
+
+        // Initialize on load
+        window.addEventListener("load", init);
+    </script>
+</body>
+</html>

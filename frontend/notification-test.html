@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification System Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .test-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .test-button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .test-button:active {
+            transform: translateY(0);
+        }
+
+        .primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #5568d3;
+        }
+
+        .success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .success:hover {
+            background: #38a169;
+        }
+
+        .warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .warning:hover {
+            background: #dd6b20;
+        }
+
+        .danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .danger:hover {
+            background: #e53e3e;
+        }
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 6px;
+        }
+
+        .status-text.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-text.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .counter {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Notification System Test</h1>
+        <p class="subtitle">Test the notification bell and history features</p>
+
+        <div class="info-box">
+            <strong>📌 Quick Test:</strong> Click a button below to send test notifications. You'll see the bell icon (🔔) in the top-right update with a red badge. Click the bell to view notification history.
+        </div>
+
+        <div class="test-grid">
+            <button class="test-button primary" onclick="sendSingleNotification()">
+                <span>📬</span> Send 1 Notification
+            </button>
+            <button class="test-button success" onclick="sendMultipleNotifications()">
+                <span>📬📬📬</span> Send 3 Notifications
+            </button>
+            <button class="test-button warning" onclick="sendBurstNotifications()">
+                <span>⚡</span> Send 5 Notifications (Burst)
+            </button>
+            <button class="test-button danger" onclick="sendMealReminders()">
+                <span>🍽️</span> Send Meal Reminders (7)
+            </button>
+        </div>
+
+        <div class="counter">
+            Notifications sent: <span id="notificationCount">0</span>
+        </div>
+
+        <div id="statusText" class="status-text" style="display: none;"></div>
+
+        <div class="info-box">
+            <strong>💡 What to verify:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>✅ Bell icon appears in navbar top-right</li>
+                <li>✅ Red badge shows notification count</li>
+                <li>✅ Click bell to open dropdown</li>
+                <li>✅ Each notification shows timestamp</li>
+                <li>✅ "Clear All" button works</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load notification system -->
+    <script src="notification-config.js"></script>
+    <script src="notification-service.js"></script>
+
+    <script>
+        let notificationServiceInstance = null;
+        let sentCount = 0;
+
+        // Initialize notification service
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing notification service for testing...');
+            notificationServiceInstance = new NotificationService();
+            console.log('✅ Notification service ready');
+        });
+
+        function updateCounter() {
+            document.getElementById('notificationCount').textContent = sentCount;
+        }
+
+        function showStatus(message, isSuccess = true) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = message;
+            statusText.className = isSuccess ? 'status-text success' : 'status-text error';
+            statusText.style.display = 'block';
+            setTimeout(() => {
+                statusText.style.display = 'none';
+            }, 3000);
+        }
+
+        function sendSingleNotification() {
+            if (!notificationServiceInstance) {
+                showStatus('❌ Service not ready', false);
+                return;
+            }
+            notificationServiceInstance.sendTestNotification('Single test notification');
+            sentCount++;
+            updateCounter();
+            showStatus('✅ 1 notification sent!');
+        }
+
+        function sendMultipleNotifications() {
+            if (!notificationServiceInstance) {
+                showStatus('❌ Service not ready', false);
+                return;
+            }
+            const messages = [
+                '🥐 First notification test',
+                '☕ Second notification test',
+                '🥪 Third notification test'
+            ];
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    notificationServiceInstance.sendTestNotification(msg);
+                    sentCount++;
+                    updateCounter();
+                }, index * 300);
+            });
+            showStatus('✅ 3 notifications sent!');
+        }
+
+        function sendBurstNotifications() {
+            if (!notificationServiceInstance) {
+                showStatus('❌ Service not ready', false);
+                return;
+            }
+            const messages = [
+                '🧪 Test 1: Breakfast reminder',
+                '🧪 Test 2: Mid-morning snack',
+                '🧪 Test 3: Lunch time',
+                '🧪 Test 4: Afternoon tea',
+                '🧪 Test 5: Dinner time'
+            ];
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    notificationServiceInstance.sendTestNotification(msg);
+                    sentCount++;
+                    updateCounter();
+                }, index * 200);
+            });
+            showStatus('⚡ 5 notifications sent in burst!');
+        }
+
+        function sendMealReminders() {
+            if (!notificationServiceInstance) {
+                showStatus('❌ Service not ready', false);
+                return;
+            }
+            const mealTimes = [
+                { time: '6:00 AM', meal: '🥐 Breakfast' },
+                { time: '8:00 AM', meal: '☕ Early snack' },
+                { time: '11:00 AM', meal: '🥗 Brunch' },
+                { time: '1:00 PM', meal: '🍜 Lunch' },
+                { time: '4:30 PM', meal: '🍰 Tea time' },
+                { time: '7:30 PM', meal: '🍛 Dinner' },
+                { time: '10:00 PM', meal: '🥛 Late snack' }
+            ];
+            mealTimes.forEach((item, index) => {
+                setTimeout(() => {
+                    notificationServiceInstance.sendTestNotification(`${item.time} - Time for ${item.meal}`);
+                    sentCount++;
+                    updateCounter();
+                }, index * 250);
+            });
+            showStatus('🍽️ 7 meal reminders sent!');
+        }
+    </script>
+</body>
+</html>
