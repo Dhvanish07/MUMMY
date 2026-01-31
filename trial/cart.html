@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Grocery Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* LEFT SIDEBAR - CATEGORIES */
+        .categories-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .categories-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .category-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .category-item:hover {
+            background-color: #e8f5e9;
+            transform: translateX(5px);
+        }
+
+        .category-item.active {
+            background-color: #4CAF50;
+            color: white;
+            border-left-color: #2e7d32;
+        }
+
+        .category-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .subcategory-list {
+            display: none;
+            padding-left: 10px;
+            margin-top: 10px;
+        }
+
+        .category-item.active .subcategory-list {
+            display: block;
+        }
+
+        .subcategory-item {
+            font-size: 13px;
+            padding: 8px 0;
+            padding-left: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 2px solid transparent;
+            padding-left: 12px;
+        }
+
+        .category-item.active .subcategory-item {
+            color: white;
+        }
+
+        .subcategory-item:hover {
+            border-left-color: white;
+            padding-left: 15px;
+        }
+
+        /* RIGHT SECTION - ITEMS GRID */
+        .items-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .items-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .item-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #4CAF50;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background-color: #45a049;
+        }
+
+        .btn-remove {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background-color: #da190b;
+        }
+
+        /* SCROLLBAR STYLING */
+        .categories-section::-webkit-scrollbar,
+        .items-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .categories-section::-webkit-scrollbar-track,
+        .items-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .categories-section::-webkit-scrollbar-thumb,
+        .items-section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .categories-section::-webkit-scrollbar-thumb:hover,
+        .items-section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .categories-section {
+                max-height: auto;
+                overflow: visible;
+            }
+
+            .items-section {
+                max-height: auto;
+                overflow: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LEFT SIDEBAR - CATEGORIES -->
+        <div class="categories-section">
+            <div class="categories-title">📂 Categories</div>
+            <div id="categoriesContainer"></div>
+        </div>
+
+        <!-- RIGHT SECTION - ITEMS -->
+        <div class="items-section">
+            <div class="items-title" id="itemsTitle">Select a Category</div>
+            <div id="itemsContainer" class="empty-state">
+                <div class="empty-state-icon">🛒</div>
+                <p>Select a category to view items</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categoryData = {
+            "🥬 1️⃣ VEGETABLES": {
+                "🥦 Fresh Vegetables": [
+                    "Onion", "Tomato", "Potato", "Ginger", "Garlic",
+                    "Green Chilli", "Capsicum", "Carrot", "Beetroot",
+                    "Radish", "Brinjal (Eggplant)", "Cucumber", "Pumpkin",
+                    "Bottle Gourd (Lauki)", "Ridge Gourd (Turai)",
+                    "Bitter Gourd (Karela)", "Snake Gourd"
+                ],
+                "🥬 Leafy Vegetables": [
+                    "Spinach (Palak)", "Fenugreek Leaves (Methi)",
+                    "Coriander Leaves", "Mint Leaves", "Curry Leaves",
+                    "Dill Leaves (Shepu)"
+                ],
+                "🌽 Exotic Vegetables": [
+                    "Broccoli", "Zucchini", "Lettuce",
+                    "Bell Pepper (Red / Yellow)", "Mushroom", "Baby Corn", "Cherry Tomato"
+                ]
+            },
+            "🍖 2️⃣ MEAT & PROTEIN": {
+                "🍗 Meat": [
+                    "Chicken", "Mutton", "Fish", "Prawns"
+                ],
+                "🥚 Protein & Alternatives": [
+                    "Eggs", "Paneer", "Tofu", "Soya Chunks"
+                ]
+            },
+            "🌾 3️⃣ GRAINS & CEREALS": {
+                "🌾 Grains": [
+                    "Rice", "Wheat Flour (Atta)", "Maida",
+                    "Rava (Sooji)", "Oats"
+                ],
+                "🌾 Pulses & Lentils": [
+                    "Toor Dal", "Moong Dal", "Masoor Dal",
+                    "Chana Dal", "Rajma", "Chickpeas (Chole)"
+                ]
+            },
+            "🌶️ 4️⃣ SPICES & SEASONINGS": {
+                "🌶️ Whole Spices": [
+                    "Cumin Seeds (Jeera)", "Mustard Seeds (Rai)",
+                    "Coriander Seeds", "Cloves", "Cinnamon", "Bay Leaf"
+                ],
+                "🌶️ Powdered Spices": [
+                    "Turmeric Powder", "Red Chilli Powder",
+                    "Coriander Powder", "Garam Masala", "Black Pepper"
+                ],
+                "🧂 Seasonings": [
+                    "Salt", "Sugar", "Jaggery"
+                ]
+            },
+            "🥛 5️⃣ DAIRY & RELATED": {
+                "🥛 Dairy": [
+                    "Milk", "Curd (Yogurt)", "Butter", "Ghee", "Cheese", "Cream"
+                ]
+            },
+            "🧺 6️⃣ LEFTOVERS / COOKED ITEMS": {
+                "🧺 Cooked Items": [
+                    "Cooked Rice", "Boiled Potatoes", "Leftover Dal",
+                    "Leftover Sabzi", "Chapati"
+                ]
+            }
+        };
+
+        // Image filename mapping
+        const imageMapping = {
+            "Onion": "onion.png",
+            "Tomato": "tomato.png",
+            "Potato": "potato.png",
+            "Ginger": "ginger.png",
+            "Garlic": "garlic.png",
+            "Green Chilli": "green chilli.png",
+            "Capsicum": "capsicum.png",
+            "Carrot": "carrot.png",
+            "Beetroot": "beetroot.png",
+            "Radish": "raddish.png",
+            "Brinjal (Eggplant)": "Brinjal (Eggplant).png",
+            "Cucumber": "cucumber.png",
+            "Pumpkin": "pumpkin.png",
+            "Bottle Gourd (Lauki)": "Bottle Gourd (Lauki).png",
+            "Ridge Gourd (Turai)": "Ridge Gourd (Turai).png",
+            "Bitter Gourd (Karela)": "Bitter Gourd (Karela).png",
+            "Snake Gourd": "snake gourd.png",
+            "Spinach (Palak)": "Spinach (Palak).png",
+            "Fenugreek Leaves (Methi)": "Fenugreek Leaves (Methi).png",
+            "Coriander Leaves": "Coriander Leaves.png",
+            "Mint Leaves": "Mint Leaves.png",
+            "Curry Leaves": "Curry Leaves.png",
+            "Dill Leaves (Shepu)": "Dill Leaves (Shepu).png",
+            "Broccoli": "Broccoli.png",
+            "Zucchini": "Zucchini.png",
+            "Lettuce": "Lettuce.png",
+            "Bell Pepper (Red / Yellow)": "Bell Peppers.png",
+            "Mushroom": "Mushroom.png",
+            "Baby Corn": "Baby Corn.png",
+            "Cherry Tomato": "Cherry Tomato.png",
+            "Chicken": "chicken.png",
+            "Mutton": "Mutton.png",
+            "Fish": "fish.png",
+            "Prawns": "prawns.png",
+            "Eggs": "eggs.png",
+            "Paneer": "panner.png",
+            "Tofu": "tofu.png",
+            "Soya Chunks": "soya chunks.png",
+            "Rice": "rice.png",
+            "Wheat Flour (Atta)": "Wheat Flour (Atta).png",
+            "Maida": "maida.png",
+            "Rava (Sooji)": "Rava (Sooji).png",
+            "Oats": "oats.png",
+            "Toor Dal": "Toor Dal.png",
+            "Moong Dal": "Moong Dal.png",
+            "Masoor Dal": "Masoor Dal.png",
+            "Chana Dal": "Chana Dal.png",
+            "Rajma": "Rajma.png",
+            "Chickpeas (Chole)": "Chickpeas (Chole).png",
+            "Cumin Seeds (Jeera)": "Jeera.png",
+            "Mustard Seeds (Rai)": "mustard.png",
+            "Coriander Seeds": "corriender.png",
+            "Cloves": "Cloves.png",
+            "Cinnamon": "cinnamon.png",
+            "Bay Leaf": "bay leaf.png",
+            "Turmeric Powder": "turmaric powder.png",
+            "Red Chilli Powder": "Chilli powder.png",
+            "Coriander Powder": "coriander powder.png",
+            "Garam Masala": "Garam masala powder.jpg",
+            "Black Pepper": "black pepper.jpg",
+            "Salt": "salt.jpg",
+            "Sugar": "sugar.jpg",
+            "Jaggery": "jaggery.jpg",
+            "Milk": "milk.jpg",
+            "Curd (Yogurt)": "curd.jpg",
+            "Butter": "butter.jpg",
+            "Ghee": "ghee.jpg",
+            "Cheese": "cheese.jpg",
+            "Cream": "cream.jpg",
+            "Cooked Rice": "cooked rice.jpg",
+            "Boiled Potatoes": "boiled potato.jpg",
+            "Leftover Dal": "left over dal.jpg",
+            "Leftover Sabzi": "left over sabzi.jpg",
+            "Chapati": "chappati.jpg"
+        };
+
+        let currentCategory = null;
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            Object.keys(categoryData).forEach((category, index) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-item';
+                categoryDiv.onclick = () => selectCategory(category, categoryDiv);
+
+                const categoryName = document.createElement('div');
+                categoryName.className = 'category-name';
+                categoryName.textContent = category;
+                categoryDiv.appendChild(categoryName);
+
+                const subcategoryList = document.createElement('div');
+                subcategoryList.className = 'subcategory-list';
+
+                Object.keys(categoryData[category]).forEach(subcategory => {
+                    const subcategoryDiv = document.createElement('div');
+                    subcategoryDiv.className = 'subcategory-item';
+                    subcategoryDiv.textContent = subcategory;
+                    subcategoryDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        selectSubcategory(category, subcategory);
+                    };
+                    subcategoryList.appendChild(subcategoryDiv);
+                });
+
+                categoryDiv.appendChild(subcategoryList);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        function selectCategory(category, categoryElement) {
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            categoryElement.classList.add('active');
+            currentCategory = category;
+            renderFirstSubcategory(category);
+        }
+
+        function renderFirstSubcategory(category) {
+            const firstSubcategory = Object.keys(categoryData[category])[0];
+            renderItems(categoryData[category][firstSubcategory], firstSubcategory);
+        }
+
+        function selectSubcategory(category, subcategory) {
+            const items = categoryData[category][subcategory];
+            renderItems(items, subcategory);
+        }
+
+        function renderItems(items, subcategoryName) {
+            const container = document.getElementById('itemsContainer');
+            const title = document.getElementById('itemsTitle');
+
+            title.textContent = subcategoryName;
+            container.className = 'items-grid';
+            container.innerHTML = '';
+
+            items.forEach(itemName => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+
+                const imageName = imageMapping[itemName] || itemName.toLowerCase() + '.png';
+                const imagePath = `pictures/${imageName}`;
+
+                itemCard.innerHTML = `
+                    <img src="${imagePath}" alt="${itemName}" class="item-image" onerror="this.style.background='#e0e0e0'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.textContent='No Image';">
+                    <div class="item-name">${itemName}</div>
+                    <div class="item-actions">
+                        <button class="btn btn-add" onclick="addToCart('${itemName}')">Add</button>
+                        <button class="btn btn-remove" onclick="removeFromCart('${itemName}')">Remove</button>
+                    </div>
+                `;
+
+                container.appendChild(itemCard);
+            });
+        }
+
+        function addToCart(itemName) {
+            alert(`${itemName} added to cart! ✓`);
+        }
+
+        function removeFromCart(itemName) {
+            alert(`${itemName} removed from cart! ✗`);
+        }
+
+        // Initialize
+        renderCategories();
+    </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUMMY – Login</title>
+    <style>
+        :root {
+            --primary-orange: #FF6B35;
+            --primary-warm: #FFD166;
+            --primary-green: #06A77D;
+            --text-dark: #2D3436;
+            --bg-light: #FEFDFB;
+            --bg-warm: #FFF5E1;
+            --border-color: #FFE5CC;
+            --shadow-medium: 0 4px 16px rgba(255, 107, 53, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-warm) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+            animation: slideUp 0.4s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-title {
+            font-size: 2.5rem;
+            color: var(--primary-orange);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 8px rgba(255, 107, 53, 0.2);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--primary-orange), var(--primary-warm));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+        }
+
+        .form-button:active {
+            transform: translateY(0);
+        }
+
+        .form-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        .form-toggle-link {
+            color: var(--primary-orange);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-toggle-link:hover {
+            text-decoration: underline;
+        }
+
+        .form-error {
+            color: #D62828;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .form-error.show {
+            display: block;
+        }
+
+        .demo-note {
+            background: var(--bg-warm);
+            border-left: 4px solid var(--primary-orange);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 1.5rem;
+            }
+
+            .auth-title {
+                font-size: 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-title">🍲</div>
+            <h1 class="auth-subtitle">MUMMY – Bhook Lagi Hai</h1>
+        </div>
+
+        <div class="demo-note">
+            💡 For demo: Use any email and password. This is a demo with backend setup required.
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    id="loginEmail" 
+                    placeholder="your@email.com"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="loginPassword" 
+                    placeholder="Enter password"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <button type="submit" class="form-button">Login</button>
+        </form>
+
+        <!-- Registration Form (Hidden by default) -->
+        <form id="registerForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    id="registerName" 
+                    placeholder="Your name"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    id="registerEmail" 
+                    placeholder="your@email.com"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="registerPassword" 
+                    placeholder="Create password"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    id="registerConfirm" 
+                    placeholder="Confirm password"
+                    required
+                >
+                <div class="form-error"></div>
+            </div>
+
+            <button type="submit" class="form-button">Register</button>
+        </form>
+
+        <!-- Toggle Links -->
+        <div class="form-toggle">
+            <span id="toggleText">Don't have an account? </span>
+            <span class="form-toggle-link" id="toggleLink">Register here</span>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const toggleText = document.getElementById('toggleText');
+        const toggleLink = document.getElementById('toggleLink');
+
+        toggleLink.addEventListener('click', () => {
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
+            
+            if (loginForm.style.display === 'none') {
+                toggleText.textContent = 'Already have an account? ';
+                toggleLink.textContent = 'Login here';
+            } else {
+                toggleText.textContent = "Don't have an account? ";
+                toggleLink.textContent = 'Register here';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Demo mode - no backend validation
+            if (email && password) {
+                localStorage.setItem('mummy_user_logged_in', 'true');
+                localStorage.setItem('mummy_user_name', email.split('@')[0]);
+                window.location.href = 'index.html';
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirm').value;
+
+            if (password !== confirm) {
+                showError(registerForm, 'registerConfirm', 'Passwords do not match');
+                return;
+            }
+
+            // Demo mode - no backend
+            localStorage.setItem('mummy_user_logged_in', 'true');
+            localStorage.setItem('mummy_user_name', name);
+            window.location.href = 'index.html';
+        });
+
+        function showError(form, fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorEl = field.parentElement.querySelector('.form-error');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+            setTimeout(() => {
+                errorEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Check if already logged in
+        if (localStorage.getItem('mummy_user_logged_in')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

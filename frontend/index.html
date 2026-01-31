@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUMMY – Bhook Lagi Hai</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="ingredient-selector.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">🍲 MUMMY</h1>
+                <p class="app-subtitle" id="appSubtitle">Bhook Lagi Hai?</p>
+                <p class="header-message" id="motherMessage">Aaj khane mein kya banau beta?</p>
+            </div>
+            
+            <!-- Language & Region Selectors -->
+            <div class="settings-panel">
+                <div class="setting-group">
+                    <label for="languageSelect">🗣️ <span id="langLabel">Language</span></label>
+                    <select id="languageSelect" class="settings-select">
+                        <option value="english">English</option>
+                        <option value="hinglish">Hinglish (हिंग्लिश)</option>
+                        <option value="hindi">हिंदी</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="regionSelect">📍 <span id="regionLabel">Region</span></label>
+                    <select id="regionSelect" class="settings-select">
+                        <option value="north">North India</option>
+                        <option value="south">South India</option>
+                        <option value="east">East India</option>
+                        <option value="west">West India</option>
+                        <option value="northeast">North-East India</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="user-info">
+                <span id="userName">Guest</span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Ingredient Selection Section - Two Panel Layout -->
+            <section class="ingredient-section">
+                <h2 class="section-title">Aaj mere ghar mein hai...</h2>
+                
+                <div class="ingredient-layout">
+                    
+                    <!-- LEFT PANEL: Category Slider -->
+                    <aside class="category-slider">
+                        <div class="slider-header">
+                            <h3>Categories</h3>
+                        </div>
+                        <nav class="category-menu" id="categoryMenu">
+                            <!-- Dynamically populated with category buttons -->
+                        </nav>
+                    </aside>
+
+                    <!-- RIGHT PANEL: Ingredient Grid -->
+                    <div class="ingredient-main">
+                        <div class="ingredient-header">
+                            <h3 id="currentCategoryTitle">Select a category</h3>
+                            <span class="ingredient-count" id="ingredientCount">0 items</span>
+                        </div>
+                        
+                        <div class="ingredient-grid" id="ingredientGrid">
+                            <!-- Dynamically populated with ingredient cards -->
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Selected Ingredients Basket -->
+            <section class="basket-section">
+                <h2 class="section-title">Selected: <span id="basketCount">0</span></h2>
+                <div class="basket-container" id="basketContainer">
+                    <p class="basket-empty">Kuch ingredients select kar...</p>
+                </div>
+            </section>
+
+            <!-- Health Status Section -->
+            <section class="health-section">
+                <h3 class="section-title" id="moodTitle">Tabiyat kaisa hai?</h3>
+                <div class="health-options">
+                    <button class="health-btn" data-health="healthy" title="Normal healthy appetite">
+                        <span class="health-emoji">😊</span>
+                        <span class="mood-text">Normal</span>
+                    </button>
+                    <button class="health-btn" data-health="fever" title="Light & easily digestible foods">
+                        <span class="health-emoji">🤒</span>
+                        <span class="mood-text">Fever</span>
+                    </button>
+                    <button class="health-btn" data-health="cold" title="Warm foods with immune-boosting spices">
+                        <span class="health-emoji">🤧</span>
+                        <span class="mood-text">Cold & Cough</span>
+                    </button>
+                    <button class="health-btn" data-health="tired" title="Energy-boosting recipes with protein">
+                        <span class="health-emoji">😴</span>
+                        <span class="mood-text">Tired</span>
+                    </button>
+                    <button class="health-btn" data-health="digestion" title="Easy to digest, light recipes">
+                        <span class="health-emoji">🤢</span>
+                        <span class="mood-text">Digestion</span>
+                    </button>
+                    <button class="health-btn" data-health="allergy" title="Avoiding common allergens">
+                        <span class="health-emoji">🚫</span>
+                        <span class="mood-text">Allergy</span>
+                    </button>
+                    <button class="health-btn" data-health="diabetic" title="Low glycemic & balanced sugar">
+                        <span class="health-emoji">🍯</span>
+                        <span class="mood-text">Diabetic</span>
+                    </button>
+                    <button class="health-btn" data-health="vegan" title="Plant-based, no animal products">
+                        <span class="health-emoji">🌱</span>
+                        <span class="mood-text">Vegan</span>
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Floating CTA Button -->
+        <button class="cta-button" id="generateBtn" disabled>
+            <span class="cta-text">Aaj kya banau?</span>
+            <span class="cta-icon">👩‍🍳</span>
+        </button>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p>Mummy soch rahi hai...</p>
+            </div>
+        </div>
+
+        <!-- Recipe Modal -->
+        <div class="modal" id="recipeModal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeModal">&times;</button>
+                <div id="recipeContainer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
