@@ -238,7 +238,7 @@ const INGREDIENTS_DB = {
                 'Curry Leaves', 'Dill Leaves'
             ],
             'Exotic Vegetables': [
-                'Broccoli', 'Zucchini', 'Lettuce', 'Bell Pepper Red', 'Bell Pepper Yellow',
+                'Broccoli', 'Zucchini', 'Lettuce', 'Red/Yellow Bell Pepper',
                 'Mushroom', 'Baby Corn', 'Cherry Tomato'
             ]
         }
@@ -344,8 +344,7 @@ const imageMapping = {
     "Broccoli": "Broccoli.png",
     "Zucchini": "Zucchini.png",
     "Lettuce": "Lettuce.png",
-    "Bell Pepper Red": "Bell Peppers.png",
-    "Bell Pepper Yellow": "Bell Peppers.png",
+    "Red/Yellow Bell Pepper": "Bell Peppers.png",
     "Mushroom": "Mushroom.png",
     "Baby Corn": "Baby Corn.png",
     "Cherry Tomato": "Cherry Tomato.png",
