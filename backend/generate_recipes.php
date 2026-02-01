@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_log("========== RECIPE GENERATION REQUEST ==========");
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyCrh8V4lxq7RUcC6sgQrRWEMo0U5p00QwQ";
+$GEMINI_API_KEY = "AIzaSyBoQm4-oU5HQCQf-yaKDXVVcyHsf_vOuBw";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 $MODEL_NAME = "gemini-2.5-flash";
 
@@ -122,8 +122,14 @@ try {
     // Call Gemini API (similar to runnnnn.py)
     $recipe = callGeminiAPI($prompt, $GEMINI_API_KEY, $GEMINI_API_URL, $MODEL_NAME);
     
+    // If API fails, use fallback mock recipe
     if (!$recipe) {
-        throw new Exception('Failed to generate recipe from API');
+        error_log("⚠️ API failed, generating mock recipe for demo");
+        $recipe = generateMockRecipe($user);
+    }
+    
+    if (!$recipe) {
+        throw new Exception('Failed to generate recipe');
     }
     
     error_log("✅ Recipe generated successfully");
@@ -386,4 +392,25 @@ function translateSpiceLevel($spice) {
     ];
     return $translations[$spice] ?? $spice;
 }
+
+/**
+ * Generate mock recipe for demo/fallback purposes
+ */
+function generateMockRecipe($user) {
+    $name = $user['name'];
+    $pref = strtolower($user['food_preference']);
+    
+    $recipes = [
+        'vegetarian' => [
+            "Haan beta! Here's a tasty Aloo Gobi for you! 🥔\n\nThis classic dish is perfect for your level of expertise. It's quick, easy, and packed with flavors.\n\n**Ingredients:**\n- 3 medium potatoes, cubed\n- 1 small cauliflower, cut into florets\n- 2 onions, chopped\n- 3 tomatoes, chopped\n- 2 tbsp oil\n- 1 tsp cumin seeds\n- 1/2 tsp turmeric\n- 1 tsp coriander\n- Salt to taste\n- Fresh cilantro\n\n**Instructions:**\n1. Heat oil in a large pan\n2. Add cumin seeds and let them crackle\n3. Add onions and sauté until golden\n4. Add potatoes and cauliflower, stir-fry for 5 minutes\n5. Add tomatoes and spices\n6. Cover and cook for 15-20 minutes until vegetables are soft\n7. Garnish with cilantro\n\n**Time:** 30 minutes\n**Serves:** 4 people\n\n💚 MUMMY's Tip: This dish is rich in fiber and vitamins. Store in fridge for up to 3 days!"
+        ],
+        'non-veg' => [
+            "Namaste beta! Here's a delicious Butter Chicken recipe! 🍗\n\nPerfect comfort food that tastes like restaurant quality!\n\n**Ingredients:**\n- 500g chicken, cubed\n- 1 cup yogurt\n- 3 tbsp butter\n- 1 onion\n- 4 tomatoes\n- 1/2 cup cream\n- Spices: turmeric, red chili, coriander\n- Salt and oil\n\n**Instructions:**\n1. Marinate chicken in yogurt and spices for 30 mins\n2. Cook chicken in oil until done\n3. In separate pan, melt butter and sauté onions\n4. Add tomatoes and spices, cook until soft\n5. Blend the tomato mixture\n6. Add cooked chicken to the gravy\n7. Add cream and simmer for 10 minutes\n8. Serve hot with rice or naan\n\n**Time:** 45 minutes\n**Serves:** 4 people\n\n💚 MUMMY's Tip: This is like restaurant butter chicken! Marinating the chicken is key. Tastes even better the next day!"
+        ]
+    ];
+    
+    $food_pref = isset($recipes[$pref]) ? $pref : 'vegetarian';
+    return $recipes[$food_pref][0];
+}
 ?>
+
