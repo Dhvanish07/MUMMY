@@ -341,7 +341,7 @@
                     <div class="form-error"></div>
                 </div>
 
-                <button type="button" class="form-button" onclick="nextGenderStep()">Next</button>
+                <button type="button" class="form-button" onclick="nextPreferenceStep()">Next</button>
             </div>
 
             <!-- Gender Step -->
@@ -369,7 +369,7 @@
                 </div>
 
                 <button type="button" class="form-button" onclick="prevPreferenceStep()" style="background: #999; margin-bottom: 0.5rem;">Back</button>
-                <button type="button" class="form-button" onclick="nextPreferenceStep()">Next</button>
+                <button type="button" class="form-button" onclick="nextGenderStep()">Next</button>
             </div>
 
             <!-- Food Preferences Step -->
@@ -648,7 +648,7 @@
         }
 
         function prevPreferenceStep() {
-            showStep('step-basic');
+            showStep('step-gender');
         }
 
         function prevLifestyleStep() {
