@@ -28,7 +28,7 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 });
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyDi2w5zSjXSzJr1nuenLRfKK3HOoV93BVg";
+$GEMINI_API_KEY = "AIzaSyDJRXDHWvaqUfHfmuctNKsDg0-MkyaQi5U";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 // Database configuration

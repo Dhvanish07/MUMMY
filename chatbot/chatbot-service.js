@@ -15,7 +15,7 @@ class ChatbotService {
         this.messageBuffer = [];
         
         // Gemini API Configuration
-        this.geminiApiKey = 'AIzaSyB95Cr5NVrrFBPlLGhC44cp_1LQKo_bpdc';
+        this.geminiApiKey = 'AIzaSyDJRXDHWvaqUfHfmuctNKsDg0-MkyaQi5U';
         this.geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
         this.modelName = 'gemini-2.5-flash';
         
