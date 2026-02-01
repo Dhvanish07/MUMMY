@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timer Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test-box { border: 2px solid #333; padding: 20px; margin: 10px 0; background: #f0f0f0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Timer Diagnostic Test</h1>
+    
+    <div class="test-box">
+        <h2>Step 1: Check localStorage</h2>
+        <div id="step1"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Step 2: Test API Call</h2>
+        <div id="step2"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Step 3: Check Timer Elements</h2>
+        <div id="step3"></div>
+    </div>
+
+    <script>
+        // Step 1: Check localStorage
+        const userId = localStorage.getItem('mummy_user_id');
+        const trialEndDate = localStorage.getItem('mummy_trial_end_date');
+        
+        let step1HTML = '<p><strong>localStorage mummy_user_id:</strong> ';
+        step1HTML += userId ? `<span class="success">${userId}</span>` : '<span class="error">NOT FOUND</span>';
+        step1HTML += '</p>';
+        step1HTML += '<p><strong>localStorage mummy_trial_end_date:</strong> ';
+        step1HTML += trialEndDate ? `<span class="success">${trialEndDate}</span>` : '<span class="error">NOT FOUND</span>';
+        step1HTML += '</p>';
+        document.getElementById('step1').innerHTML = step1HTML;
+
+        // Step 2: Test API Call
+        if (userId) {
+            fetch('/mummy/backend/check-trial.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                let step2HTML = '<p><strong>API Response:</strong></p>';
+                step2HTML += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                if (data.success) {
+                    step2HTML += '<p><span class="success">✅ API working correctly!</span></p>';
+                } else {
+                    step2HTML += '<p><span class="error">❌ API error: ' + data.error + '</span></p>';
+                }
+                document.getElementById('step2').innerHTML = step2HTML;
+            })
+            .catch(err => {
+                document.getElementById('step2').innerHTML = '<p><span class="error">❌ API Error: ' + err.message + '</span></p>';
+            });
+        } else {
+            document.getElementById('step2').innerHTML = '<p><span class="error">❌ Cannot test API - no user ID in localStorage</span></p>';
+        }
+
+        // Step 3: Check if subscription.html timer elements would exist
+        let step3HTML = '<p><strong>Timer elements on subscription.html:</strong></p>';
+        step3HTML += '<ul>';
+        step3HTML += '<li>timerDays - for days display</li>';
+        step3HTML += '<li>timerHours - for hours display</li>';
+        step3HTML += '<li>timerMinutes - for minutes display</li>';
+        step3HTML += '<li>trialEndDate - for date display</li>';
+        step3HTML += '</ul>';
+        step3HTML += '<p><a href="subscription.html" target="_blank"><strong>Go to Subscription Page →</strong></a></p>';
+        step3HTML += '<p>Open DevTools (F12) and check the Console tab to see timer debug messages</p>';
+        document.getElementById('step3').innerHTML = step3HTML;
+    </script>
+</body>
+</html>

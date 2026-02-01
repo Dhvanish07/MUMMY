@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium – MUMMY</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Initialize timer
+        function initializeTimer() {
+            const userId = localStorage.getItem('mummy_user_id');
+            
+            if (!userId) {
+                console.error('❌ No user ID found in localStorage');
+                // Show default 7-day timer
+                showDefaultTimer();
+                return;
+            }
+
+            console.log('🔍 Fetching trial data for user:', userId);
+
+            // Fetch user trial data from server
+            fetch('/mummy/backend/check-trial.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            })
+            .then(res => {
+                console.log('📡 API Response Status:', res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log('📊 API Response Data:', data);
+                
+                if (data.success && data.trial_end_date) {
+                    console.log('✅ Trial end date received:', data.trial_end_date);
+                    
+                    // Save to localStorage for reference
+                    localStorage.setItem('mummy_trial_end_date', data.trial_end_date);
+                    
+                    // Set the trial end date display
+                    const trialDate = new Date(data.trial_end_date);
+                    document.getElementById('trialEndDate').textContent = trialDate.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    // Update timer immediately
+                    updateTimer();
+                    
+                    // Update timer every second
+                    window.timerInterval = setInterval(updateTimer, 1000);
+                    console.log('⏱️  Timer started');
+                } else {
+                    console.warn('⚠️ Trial data not available or empty');
+                    showDefaultTimer();
+                }
+            })
+            .catch(err => {
+                console.error('❌ Error fetching trial data:', err);
+                // Fallback to localStorage if API fails
+                const trialEndDateStr = localStorage.getItem('mummy_trial_end_date');
+                if (trialEndDateStr) {
+                    console.log('📚 Using localStorage fallback:', trialEndDateStr);
+                    const trialDate = new Date(trialEndDateStr);
+                    document.getElementById('trialEndDate').textContent = trialDate.toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    updateTimer();
+                    window.timerInterval = setInterval(updateTimer, 1000);
+                } else {
+                    console.warn('⚠️ No fallback data available');
+                    showDefaultTimer();
+                }
+            });
+        }
+
+        function showDefaultTimer() {
+            // Show default 7-day timer
+            console.log('📋 Showing default 7-day timer');
+            const sevenDaysFromNow = new Date();
+            sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+            const dateStr = sevenDaysFromNow.toISOString().split('T')[0] + ' ' + sevenDaysFromNow.toTimeString().slice(0, 8);
+            localStorage.setItem('mummy_trial_end_date', dateStr);
+            
+            const trialDate = new Date(dateStr);
+            document.getElementById('trialEndDate').textContent = trialDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            updateTimer();
+            window.timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const trialEndDateStr = localStorage.getItem('mummy_trial_end_date');
+            
+            // Check if DOM elements exist
+            const timerDaysEl = document.getElementById('timerDays');
+            const timerHoursEl = document.getElementById('timerHours');
+            const timerMinutesEl = document.getElementById('timerMinutes');
+            
+            if (!timerDaysEl || !timerHoursEl || !timerMinutesEl) {
+                console.warn('⚠️ Timer DOM elements not found yet');
+                return;
+            }
+            
+            if (!trialEndDateStr) {
+                console.warn('⚠️ No trial end date in localStorage');
+                // Set default values
+                timerDaysEl.textContent = '07';
+                timerHoursEl.textContent = '00';
+                timerMinutesEl.textContent = '00';
+                return;
+            }
+
+            const now = new Date();
+            const trialEnd = new Date(trialEndDateStr);
+
+            if (isNaN(trialEnd.getTime())) {
+                console.error('❌ Invalid trial end date format:', trialEndDateStr);
+                timerDaysEl.textContent = '07';
+                timerHoursEl.textContent = '00';
+                timerMinutesEl.textContent = '00';
+                return;
+            }
+
+            const diff = trialEnd - now;
+
+            if (diff <= 0) {
+                console.warn('⏱️  Trial has expired');
+                timerDaysEl.textContent = '00';
+                timerHoursEl.textContent = '00';
+                timerMinutesEl.textContent = '00';
+                
+                // Optional: Show expiration message
+                const trialEndDateEl = document.getElementById('trialEndDate');
+                if (trialEndDateEl) {
+                    trialEndDateEl.style.color = '#d32f2f';
+                    if (!trialEndDateEl.textContent.includes('Expired')) {
+                        trialEndDateEl.textContent += ' (Expired)';
+                    }
+                }
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+
+            timerDaysEl.textContent = String(days).padStart(2, '0');
+            timerHoursEl.textContent = String(hours).padStart(2, '0');
+            timerMinutesEl.textContent = String(minutes).padStart(2, '0');
+        }
+
+        function selectPlan(planName, price) {
+            localStorage.setItem('selected_plan', JSON.stringify({
+                name: planName,
+                price: price,
+                selectedAt: new Date().toISOString()
+            }));
+
+            alert(`✅ ${planName.toUpperCase()} plan selected!\n\nAmount: $${price}/month\n\nPayment processing would be implemented here.`);
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize timer on page load
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', initializeTimer);
+        } else {
+            console.log('📄 Document already loaded, initializing timer immediately');
+            if (document.readyState === 'complete') {
+                setTimeout(initializeTimer, 100);
+            } else {
+                initializeTimer();
+            }
+        }
+
+        window.addEventListener('load', () => {
+            console.log('🔄 Window load event fired');
+            if (!localStorage.getItem('mummy_trial_end_date')) {
+                console.log('⏳ Timer not initialized yet, initializing now');
+                initializeTimer();
+            }
+        });
+    </script>
+    <style>
+        .subscription-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .subscription-header {
+            background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .subscription-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .subscription-header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .timer-section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 500px;
+            margin: 20px auto 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .timer-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-unit {
+            text-align: center;
+            font-size: 0.5em;
+            opacity: 0.9;
+        }
+
+        .timer-value {
+            font-size: 2em;
+            line-height: 1;
+        }
+
+        .timer-text {
+            font-size: 0.6em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-heavy);
+            border-color: var(--primary-orange);
+        }
+
+        .plan-card.featured {
+            border-color: var(--primary-orange);
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 209, 102, 0.05) 100%);
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: linear-gradient(90deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .plan-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            margin-top: 10px;
+        }
+
+        .plan-price {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--primary-orange);
+            margin: 15px 0;
+        }
+
+        .plan-price small {
+            font-size: 0.45em;
+            color: var(--text-light);
+            display: block;
+            margin-top: 5px;
+        }
+
+        .plan-description {
+            color: var(--text-light);
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .plan-features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-dark);
+            font-size: 0.95em;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .plan-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .plan-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+        }
+
+        .plan-button.primary {
+            background: linear-gradient(90deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+            color: white;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .plan-button.primary:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .plan-button.secondary {
+            background: #f5f5f5;
+            color: var(--primary-orange);
+            border: 2px solid var(--border-color);
+        }
+
+        .plan-button.secondary:hover {
+            background: var(--bg-warm);
+            border-color: var(--primary-orange);
+        }
+
+        .info-section {
+            background: var(--bg-warm);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border-left: 4px solid var(--primary-orange);
+        }
+
+        .info-section h3 {
+            color: var(--primary-orange);
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .info-section ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .info-section li {
+            color: var(--text-dark);
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(90deg, var(--primary-orange) 0%, var(--primary-warm) 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .back-button i {
+            font-size: 1.2em;
+        }
+
+        .plan-highlight {
+            background: var(--primary-warm);
+            padding: 6px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-dark);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .plan-card.featured {
+                transform: scale(1);
+            }
+
+            .subscription-header h1 {
+                font-size: 1.8em;
+            }
+
+            .timer-display {
+                font-size: 2em;
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <!-- Branding Section -->
+            <div class="navbar-brand">
+                <div class="brand-logo">
+                    <img src="pictures/logo.png" alt="MUMMY Logo" class="logo-img">
+                </div>
+                <div class="brand-text">
+                    <h1 class="app-title">MUMMY</h1>
+                    <p class="app-subtitle">Upgrade to Premium</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="primary-actions">
+                <a href="index.html" class="action-link" title="Recipe Generator">
+                    <span class="action-icon">🍳</span>
+                    <span class="action-text">Recipes</span>
+                </a>
+                <a href="packing.html" class="action-link" title="Packing List">
+                    <span class="action-icon">🎒</span>
+                    <span class="action-text">Pack My Bag</span>
+                </a>
+                <a href="bimaar.html" class="action-link" title="Bimaar Hu - When Not Feeling Well">
+                    <span class="action-icon">🧊</span>
+                    <span class="action-text">Bimaar Hu</span>
+                </a>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="subscription-content">
+                <!-- Back Button -->
+                <button class="back-button" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back to Recipes
+                </button>
+
+                <!-- Header with Timer -->
+                <div class="subscription-header">
+                    <h1>🚀 Upgrade to Premium</h1>
+                    <p>Get unlimited access to all MUMMY features!</p>
+                    
+                    <div class="timer-section">
+                        <div class="timer-label">⏰ Your trial expires in:</div>
+                        <div class="timer-display">
+                            <div class="timer-unit">
+                                <div class="timer-value" id="timerDays">7</div>
+                                <div class="timer-text">DAYS</div>
+                            </div>
+                            <span>:</span>
+                            <div class="timer-unit">
+                                <div class="timer-value" id="timerHours">0</div>
+                                <div class="timer-text">HRS</div>
+                            </div>
+                            <span>:</span>
+                            <div class="timer-unit">
+                                <div class="timer-value" id="timerMinutes">0</div>
+                                <div class="timer-text">MIN</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 15px; font-size: 0.9em; opacity: 0.9;">
+                            Expires on <strong id="trialEndDate"></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Plans -->
+                <div class="plans-grid">
+                    <!-- Plan 1: Basic -->
+                    <div class="plan-card">
+                        <h3 class="plan-name">🎯 Basic</h3>
+                        <div class="plan-price">$2.99<small>/month</small></div>
+                        <p class="plan-description">Perfect for getting started</p>
+                        
+                        <ul class="plan-features">
+                            <li>Unlimited Recipe Suggestions</li>
+                            <li>Packing List Generator</li>
+                            <li>Basic Health Tips</li>
+                            <li>Mobile Optimized</li>
+                            <li>Email Support</li>
+                        </ul>
+
+                        <button class="plan-button secondary" onclick="selectPlan('basic', 2.99)">
+                            Choose Plan
+                        </button>
+                    </div>
+
+                    <!-- Plan 2: Pro (Featured) -->
+                    <div class="plan-card featured">
+                        <div class="featured-badge">⭐ MOST POPULAR</div>
+                        
+                        <h3 class="plan-name">👑 Pro</h3>
+                        <div class="plan-price">$14.99<small>/month</small></div>
+                        <p class="plan-description">Everything you need to stay healthy</p>
+                        
+                        <ul class="plan-features">
+                            <li>All Basic Features</li>
+                            <li>Advanced Diet Planning</li>
+                            <li>Personalized Nutrition Goals</li>
+                            <li>Priority Support</li>
+                            <li>Weekly Health Reports</li>
+                            <li>Ad-Free Experience</li>
+                        </ul>
+
+                        <button class="plan-button primary" onclick="selectPlan('pro', 14.99)">
+                            Upgrade to Pro
+                        </button>
+                        <div class="plan-highlight">Recommended!</div>
+                    </div>
+
+                    <!-- Plan 3: Premium -->
+                    <div class="plan-card">
+                        <h3 class="plan-name">💎 Premium</h3>
+                        <div class="plan-price">$29.99<small>/month</small></div>
+                        <p class="plan-description">The ultimate MUMMY experience</p>
+                        
+                        <ul class="plan-features">
+                            <li>All Pro Features</li>
+                            <li>AI Health Advisor (24/7)</li>
+                            <li>Custom Meal Plans</li>
+                            <li>Fitness Integration</li>
+                            <li>Family Sharing (up to 5)</li>
+                            <li>VIP Support (Phone & Chat)</li>
+                        </ul>
+
+                        <button class="plan-button secondary" onclick="selectPlan('premium', 29.99)">
+                            Choose Plan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="info-section">
+                    <h3>💳 Why Choose Premium?</h3>
+                    <ul>
+                        <li>Secure 256-bit SSL Payment</li>
+                        <li>No Hidden Fees</li>
+                        <li>Cancel Anytime</li>
+                        <li>7-Day Money-Back Guarantee</li>
+                        <li>Lifetime Customer Support</li>
+                        <li>Free Updates Forever</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

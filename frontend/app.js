@@ -5,14 +5,30 @@
 
 // Configuration
 const CONFIG = {
-    GEMINI_API_KEY: 'AIzaSyCAaZcVrisqY3RgVaI0Tub0_XPGuJRsmqc', // ✅ API key configured
+    GEMINI_API_KEY: 'AIzaSyBPTUMY-dw4f8-REVYlzOUH25mWZzFy9lg', // ✅ API key configured
     GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     STORAGE_KEY_INGREDIENTS: 'mummy_selected_ingredients',
     STORAGE_KEY_HEALTH: 'mummy_health_status',
     STORAGE_KEY_USER: 'mummy_user_logged_in',
     STORAGE_KEY_LANGUAGE: 'mummy_language',
     STORAGE_KEY_REGION: 'mummy_region',
+    REQUEST_DELAY_MS: 1500, // Delay between API requests to prevent rate limiting
 };
+
+// Rate Limiting - Prevent too many requests
+let lastGeminiRequestTime = 0;
+const MIN_REQUEST_INTERVAL = CONFIG.REQUEST_DELAY_MS;
+
+async function waitForRateLimit() {
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastGeminiRequestTime;
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+        const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+        console.log(`⏳ Rate limiting: waiting ${waitTime}ms before next request...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    lastGeminiRequestTime = Date.now();
+}
 
 // ========================================
 // LANGUAGE & TRANSLATIONS
@@ -1110,6 +1126,9 @@ async function callGeminiAPI(prompt) {
         return generateSampleRecipes();
     }
 
+    // Apply rate limiting to prevent 429 errors
+    await waitForRateLimit();
+
     // Gemini API requires the key in the URL, not in Authorization header
     const url = `${CONFIG.GEMINI_API_URL}?key=${CONFIG.GEMINI_API_KEY}`;
     
@@ -1138,9 +1157,15 @@ async function callGeminiAPI(prompt) {
     });
 
     if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
         console.error('API Error:', response.status, response.statusText);
-        const errorData = await response.json();
         console.error('Error Details:', errorData);
+        
+        // Special handling for rate limiting (429)
+        if (response.status === 429) {
+            throw new Error('API rate limit exceeded. Please wait a moment and try again.');
+        }
+        
         throw new Error(`Gemini API Error: ${response.status} - ${JSON.stringify(errorData)}`);
     }
 

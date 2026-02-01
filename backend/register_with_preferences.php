@@ -53,6 +53,10 @@ $outsideFood = $input['preferences']['outsideFood'] ?? null;
 $mummyReminders = $input['preferences']['mummyReminders'] ?? null;
 $language = $input['preferences']['language'] ?? 'english';
 
+// Extract trial settings (default 7 days if not provided)
+$trialDays = isset($input['trial_days']) ? intval($input['trial_days']) : 7;
+$trialDays = max(1, min($trialDays, 365)); // Ensure between 1-365 days
+
 error_log("Name: $name, Email: $email, Prefs: $foodPref, $cookingFreq, $spiceLevel, $cookingTime, $lateNightHunger, $outsideFood, $mummyReminders");
 
 // Database configuration
@@ -102,10 +106,14 @@ try {
     // Hash password
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
     
-    // Insert user
+    // Calculate trial end date
+    require_once 'config.php';
+    $trialEndDate = calculateTrialEndDate($trialDays);
+    
+    // Insert user with trial end date
     $stmt = $conn->prepare('
-        INSERT INTO users (name, gender, email, password, food_preference, cooking_frequency, spice_level, cooking_time_preference, late_night_hunger, outside_food_frequency, mummy_reminders, language_preference)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (name, gender, email, password, food_preference, cooking_frequency, spice_level, cooking_time_preference, late_night_hunger, outside_food_frequency, mummy_reminders, language_preference, account_created_at, trial_end_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
     ');
     
     if (!$stmt) {
@@ -114,7 +122,7 @@ try {
     }
     
     $stmt->bind_param(
-        'ssssssssssss',
+        'sssssssssss s',
         $name,
         $gender,
         $email,
@@ -126,7 +134,8 @@ try {
         $lateNightHunger,
         $outsideFood,
         $mummyReminders,
-        $language
+        $language,
+        $trialEndDate
     );
     
     if ($stmt->execute()) {
@@ -136,10 +145,14 @@ try {
         http_response_code(201);
         echo json_encode([
             'success' => true,
-            'message' => 'User registered successfully',
+            'message' => "User registered successfully - $trialDays day trial active!",
             'user_id' => $user_id,
             'name' => $name,
-            'email' => $email
+            'email' => $email,
+            'account_created_at' => date('Y-m-d H:i:s'),
+            'trial_end_date' => $trialEndDate,
+            'trial_days' => $trialDays,
+            'trial_days_remaining' => $trialDays
         ]);
     } else {
         error_log("EXECUTE ERROR: " . $stmt->error);

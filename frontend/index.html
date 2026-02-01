@@ -51,6 +51,11 @@
                     </select>
                 </div>
 
+                <!-- Subscription Button -->
+                <button class="utility-btn" id="subscriptionBtn" title="Upgrade to Premium" onclick="openSubscription()">
+                    ⭐
+                </button>
+
                 <!-- Notification Bell -->
                 <button class="utility-btn" id="notificationBell" title="Notifications">
                     🔔
@@ -246,6 +251,18 @@
     <script src="../chatbot/chatbot-service.js"></script>
     <script src="../chatbot/chat-manager.js"></script>
     
+    <!-- Trial Lock System -->
+    <link rel="stylesheet" href="trial-lock.css">
+    <script src="trial-lock.js"></script>
+    
+    <script>
+        // Navigate to subscription page
+        function openSubscription() {
+            window.location.href = 'subscription.html';
+        }
+    </script>
+
+
     <!-- Main App -->
     <script src="app.js"></script>
 </body>

@@ -744,8 +744,21 @@
                     localStorage.setItem('mummy_user_language', preferences.language);
                     localStorage.setItem('mummy_user_preferences', JSON.stringify(preferences));
                     
+                    // Save account creation timestamp for trial tracking
+                    if (data.account_created_at) {
+                        localStorage.setItem('mummy_account_created_at', data.account_created_at);
+                    } else {
+                        localStorage.setItem('mummy_account_created_at', new Date().toISOString());
+                    }
+                    
+                    // Save trial end date for trial lock system
+                    if (data.trial_end_date) {
+                        localStorage.setItem('mummy_trial_end_date', data.trial_end_date);
+                        console.log('📅 Trial end date saved:', data.trial_end_date);
+                    }
+                    
                     console.log('✅ User registered successfully:', data);
-                    alert('✅ Registration successful! Welcome ' + name);
+                    alert('✅ Registration successful! Welcome ' + name + '\n\n' + (data.trial_days ? data.trial_days + '-day' : '7-day') + ' free trial activated!');
                     window.location.href = 'index.html';
                 } else {
                     showError(registerForm, 'registerEmail', data.error || 'Registration failed');

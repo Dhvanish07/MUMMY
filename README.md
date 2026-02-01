@@ -43,6 +43,7 @@ Create a caring assistant that helps users eat well, pack smart, and stay suppor
 - Health Tracking: `bimaar` view and quick calories guide
 - Auth (basic): Login/Register stubs with optional DB wiring
 - Local Persistence: Auto-login demo user; history saved in localStorage
+- Subscription & Trial: 7-day trial with subscription upsell, DB-backed timer, and UI lock after expiry
 
 ---
 
@@ -52,6 +53,7 @@ Create a caring assistant that helps users eat well, pack smart, and stay suppor
 - Backend: PHP 8 (XAMPP/Apache)
 - API: Google Gemini 2.5 Flash (`generateContent`)
 - Data: localStorage (mock fallback), optional MySQL
+- Monetization: Trial status in MySQL (`users.trial_end_date`) + subscription landing
 
 ---
 
@@ -94,15 +96,40 @@ mummy/
 │  ├─ notification-config.js     # Config for meal windows
 │  ├─ notification-test.html     # Test page for notifications
 │  ├─ notifications.json         # Notification data
+│  ├─ subscription.html          # Subscription landing page with plans + countdown
+│  ├─ trial-lock.js              # Frontend gating based on trial expiry
+│  ├─ trial-lock.css             # Styles for locked-state UI
 │  ├─ ingredient-selector.css    # Ingredient selector styling
 │  ├─ styles.css                 # Global styles
 │  ├─ vegetables.json            # Ingredient data
 │  └─ pictures/                  # UI images and logos
-│
 ├─ backend/
-│  ├─ generate_recipes.php       # Recipe endpoint (Gemini + user preferences)
-│  ├─ generate_packing.php       # Packing endpoint (Gemini + destination/days)
+
 │  ├─ config.php                 # Optional DB config include
+
+## Subscription & Monetization
+
+MUMMY includes a simple, production-ready trial and subscription flow:
+
+- 7-Day Trial (auto-init): On first use, the backend sets `users.trial_end_date` to now + 7 days if it’s NULL.
+- DB-Backed Timer: The frontend reads the server’s trial end time to ensure accurate countdown across devices.
+- Trial Locking: Once expired, key actions are gated and the user is redirected to the subscription page.
+- Subscription Page: Clear pricing plans, benefits, and a prominent CTA. Styled to match the app’s purple gradient.
+- Payment Gateway Ready: Wire your provider (Stripe/Razorpay/etc.) to the CTA; hooks are in place.
+- UX Details: A subscription star icon appears near the notification bell for quick access.
+
+Key Files:
+- Frontend: `frontend/subscription.html`, `frontend/trial-lock.js`, `frontend/trial-lock.css`, `frontend/app.js`
+- Backend: `backend/check-trial.php` (auto-initialize + status), `backend/set-trial-date.php`, `backend/config.php`
+
+Behavior Overview:
+- If trial is active: All features work normally; subscription page shows remaining time.
+- If trial expired: Recipe/Packing/Chatbot actions redirect to subscription with lock messaging.
+- Changing trial length: Adjust the default in `backend/check-trial.php` (e.g., +7 days → +14 days).
+
+## Setup (Windows + XAMPP)
+│  ├─ check-trial.php            # Trial status endpoint (auto-initializes if NULL)
+│  ├─ set-trial-date.php         # Admin/helper to set/extend trial end date
 │  ├─ login.php                  # Login (optional)
 │  ├─ register.php               # Register (optional)
 │  ├─ register_with_preferences.php # Register + preferences (optional)
@@ -110,11 +137,38 @@ mummy/
 │  ├─ test_connection.php        # DB connection tester
 │  ├─ test_recipe_generation.php # Endpoint tester for recipes
 │  └─ RECIPE_SUGGESTION_PROMPT.md# Prompt reference
-│
 ├─ chatbot/
-│  ├─ chatbot-service.js         # Gemini-native chat request/response handling
-│  ├─ chat-manager.js            # Chat UI modal + message handling
+
 │  ├─ chatbot-config.js          # Greetings, memory settings, personality
+
+### 6. Subscription & Trial Monetization
+
+**How it works:**
+1. First backend call initializes `users.trial_end_date` if NULL.
+2. Frontend fetches trial status from `backend/check-trial.php` and displays a countdown in `frontend/subscription.html`.
+3. If expired, core features redirect to the subscription page with upsell messaging via `frontend/trial-lock.js`.
+4. Integrate a payment gateway by wiring the CTA buttons to your provider (Stripe/Razorpay/etc.).
+
+**Endpoint:**
+```
+GET /backend/check-trial.php?user_id={user_id}
+```
+
+**Response:**
+```json
+{
+   "success": true,
+   "trial_end_date": "2026-02-08T10:00:00Z",
+   "expired": false
+}
+```
+
+**Customization:**
+- Change trial length inside `backend/check-trial.php`.
+- Update pricing cards and styles in `frontend/subscription.html`.
+- Adjust lock behavior in `frontend/trial-lock.js`.
+
+## 🔧 Troubleshooting
 │  ├─ chatbot-styles.css         # Chat styling
 │  ├─ chatbot-data.json          # Sample storage format
 │  ├─ chatbot-test.js            # Chatbot integration test harness
@@ -164,13 +218,20 @@ mummy/
 4) Configure API keys (critical)
 - See “Configuration” below to set keys in three locations.
 
-5) Optional: Configure MySQL
+5) Configure Trial System (monetization)
+- Ensure MySQL is running (optional but recommended for trial)
+- Confirm your DB has `users.trial_end_date` (DATETIME)
+- Deploy `backend/check-trial.php` and verify it initializes a 7-day trial if NULL
+- Access `frontend/subscription.html` to view the countdown and plans
+
+6) Optional: Configure MySQL
 - Run `backend/setup_database.php` and configure `backend/config.php`.
 - Import sample data from `SAMPLE_USER_DATA.sql` if needed.
 
-6) Launch
+7) Launch
 - Open: `http://localhost/mummy/index.html` (main)
 - Also available: `packing.html`, `bimaar.html`, `login.html`, `notification-test.html` under `frontend/`.
+- Subscription page: `http://localhost/mummy/frontend/subscription.html` (or via the ⭐ icon)
 
 ---
 
@@ -198,6 +259,12 @@ Notes:
 Optional DB:
 - Configure `backend/config.php` with your DB credentials.
 - Use `backend/setup_database.php` and provided `.sql` files to initialize.
+
+Trial & Subscription Settings:
+- `backend/check-trial.php` auto-initializes `users.trial_end_date` to 7 days from first access.
+- To change default trial duration: edit the added-days calculation inside `check-trial.php`.
+- Frontend gating and redirection are handled by `frontend/trial-lock.js`.
+- Customize subscription UI and plans in `frontend/subscription.html`.
 
 ---
 
@@ -237,6 +304,10 @@ Optional DB:
    - POST: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_CHATBOT_API_KEY`
    - Body uses Gemini-native `contents/parts` format
 
+- Trial Status
+   - GET: `/backend/check-trial.php?user_id=1`
+   - Returns: `{ success: true, trial_end_date: "2026-02-08T10:00:00Z", expired: false }`
+
 ---
 
 ## Troubleshooting
@@ -258,6 +329,11 @@ Optional DB:
 
 - cURL Missing in PHP
    - Endpoints use `file_get_contents` with `stream_context`, so cURL is not required.
+
+- 429 Too Many Requests (Rate Limit)
+   - Cause: Gemini API quota exceeded due to rapid requests.
+   - Fix: The app enforces a 1.5s delay between calls in `frontend/app.js`.
+   - Tip: Wait 2–5 minutes and retry; avoid spamming requests.
 
 ---
 
@@ -411,6 +487,9 @@ mummy/
 │   ├── notification-manager.js         # Notification UI management
 │   ├── notification-service.js         # Notification logic
 │   ├── notification-integration.js     # Notification integration
+│   ├── subscription.html               # Subscription landing page
+│   ├── trial-lock.js                   # Frontend trial gating
+│   ├── trial-lock.css                  # Trial lock styles
 │   ├── styles.css                      # Main styles
 │   ├── pictures/
 │   │   └── logo.png
@@ -419,6 +498,7 @@ mummy/
 ├── backend/
 │   ├── generate_recipes.php            # Recipe generation endpoint
 │   ├── generate_packing.php            # Packing list endpoint
+│   ├── check-trial.php                 # Trial status endpoint
 │   └── db_config.php                   # Database configuration
 │
 ├── chatbot/
