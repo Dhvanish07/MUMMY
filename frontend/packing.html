@@ -393,7 +393,7 @@
                 const userId = localStorage.getItem('mummy_user_id');
                 console.log('👤 User logged in as:', userId);
 
-                const response = await fetch('http://localhost/mummy/generate_packing.php', {
+                const response = await fetch('http://localhost/mummy/backend/generate_packing.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
