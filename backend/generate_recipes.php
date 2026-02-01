@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_log("========== RECIPE GENERATION REQUEST ==========");
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyAHRNnv44mtIgd1Ib4_YxpMDRI_9V3mLSE";
+$GEMINI_API_KEY = "AIzaSyC9kvJU0XpsMDWjH-Llhvi4HcxufWik7ws";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 $MODEL_NAME = "gemini-2.5-flash";
 
