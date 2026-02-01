@@ -5,7 +5,7 @@
 
 // Configuration
 const CONFIG = {
-    GEMINI_API_KEY: 'AIzaSyDJRXDHWvaqUfHfmuctNKsDg0-MkyaQi5U', // ✅ API key configured
+    GEMINI_API_KEY: 'AIzaSyDnonZqhEXT6AG0hPfBeFlSUlGCq7UH0uA', // ✅ API key configured
     GEMINI_API_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     STORAGE_KEY_INGREDIENTS: 'mummy_selected_ingredients',
     STORAGE_KEY_HEALTH: 'mummy_health_status',

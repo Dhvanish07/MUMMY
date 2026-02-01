@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_log("========== RECIPE GENERATION REQUEST ==========");
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyDJRXDHWvaqUfHfmuctNKsDg0-MkyaQi5U";
+$GEMINI_API_KEY = "AIzaSyCSGIWzp9RSH_70ootOXhPAXj0gVyV900o";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 $MODEL_NAME = "gemini-2.5-flash";
 
@@ -49,6 +49,36 @@ if (!$user_id) {
 }
 
 error_log("User ID requested: $user_id");
+
+// ========== CACHING LOGIC ==========
+$cache_dir = sys_get_temp_dir() . '/mummy_recipes/';
+if (!is_dir($cache_dir)) {
+    mkdir($cache_dir, 0755, true);
+}
+$cache_key = 'recipe_user_' . $user_id;
+$cache_file = $cache_dir . md5($cache_key) . '.json';
+$cache_duration = 300; // 5 minutes
+
+// Check if cached recipe exists and is still valid
+if (file_exists($cache_file)) {
+    $cache_data = json_decode(file_get_contents($cache_file), true);
+    if ($cache_data && time() - $cache_data['timestamp'] < $cache_duration) {
+        error_log("✅ Cache HIT: Returning cached recipe for user $user_id");
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'user_id' => $user_id,
+            'user_name' => $cache_data['user_name'],
+            'recipe' => $cache_data['recipe'],
+            'preferences' => $cache_data['preferences'],
+            'cached' => true,
+            'cache_age_seconds' => time() - $cache_data['timestamp']
+        ]);
+        exit;
+    }
+}
+
+error_log("⚠️ Cache MISS: Generating fresh recipe for user $user_id");
 
 try {
     // Connect to database
@@ -131,6 +161,17 @@ try {
     // Clean up the recipe
     $recipe = cleanRecipeContent($recipe);
     
+    // SAVE TO CACHE before returning
+    $cache_data = [
+        'timestamp' => time(),
+        'user_id' => $user_id,
+        'user_name' => $user['name'],
+        'recipe' => $recipe,
+        'preferences' => $user
+    ];
+    file_put_contents($cache_file, json_encode($cache_data));
+    error_log("✅ Recipe cached to $cache_file");
+    
     // Return the recipe
     http_response_code(200);
     echo json_encode([
@@ -139,6 +180,7 @@ try {
         'user_name' => $user['name'],
         'recipe' => $recipe,
         'preferences' => $user,
+        'cached' => false,
         'debug' => [
             'api_key_used' => substr($GEMINI_API_KEY, 0, 10) . '...',
             'api_url' => $GEMINI_API_URL

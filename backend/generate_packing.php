@@ -28,7 +28,7 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 });
 
 // Configuration
-$GEMINI_API_KEY = "AIzaSyDJRXDHWvaqUfHfmuctNKsDg0-MkyaQi5U";
+$GEMINI_API_KEY = "AIzaSyBt3GfqGSdT5wfT8rzIL1iuIKhPEanoKCw";
 $GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 // Database configuration
@@ -72,6 +72,35 @@ if ($days < 1 || $days > 30) {
 }
 
 error_log("Trip Data: Destination=$destination, Days=$days, UserID=$userId");
+
+// ========== CACHING LOGIC ==========
+$cache_dir = sys_get_temp_dir() . '/mummy_packing/';
+if (!is_dir($cache_dir)) {
+    mkdir($cache_dir, 0755, true);
+}
+$cache_key = 'packing_' . ($userId ?? 'guest') . '_' . $destination . '_' . $days;
+$cache_file = $cache_dir . md5($cache_key) . '.json';
+$cache_duration = 300; // 5 minutes
+
+// Check if cached packing list exists and is still valid
+if (file_exists($cache_file)) {
+    $cache_data = json_decode(file_get_contents($cache_file), true);
+    if ($cache_data && time() - $cache_data['timestamp'] < $cache_duration) {
+        error_log("✅ Cache HIT: Returning cached packing list");
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'packing_list' => $cache_data['packing_list'],
+            'user_name' => $cache_data['user_name'],
+            'trip_info' => $cache_data['trip_info'],
+            'cached' => true,
+            'cache_age_seconds' => time() - $cache_data['timestamp']
+        ]);
+        exit;
+    }
+}
+
+error_log("⚠️ Cache MISS: Generating fresh packing list");
 
 try {
     // Initialize user data with defaults
@@ -151,6 +180,18 @@ try {
     // Clean up the response
     $packingList = cleanPackingContent($packingList);
     
+    // SAVE TO CACHE before returning
+    $cache_data = [
+        'timestamp' => time(),
+        'user_name' => $userData['name'] ?? 'friend',
+        'destination' => $destination,
+        'days' => $days,
+        'packing_list' => $packingList,
+        'trip_info' => "Trip to $destination for $days days"
+    ];
+    file_put_contents($cache_file, json_encode($cache_data));
+    error_log("✅ Packing list cached to $cache_file");
+    
     // Return the packing list
     http_response_code(200);
     echo json_encode([
@@ -158,7 +199,8 @@ try {
         'destination' => $destination,
         'days' => $days,
         'user_name' => $userData['name'] ?? 'friend',
-        'packing_list' => $packingList
+        'packing_list' => $packingList,
+        'cached' => false
     ]);
     
 } catch (Exception $e) {
